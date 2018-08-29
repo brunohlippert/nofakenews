@@ -1,0 +1,32 @@
+{
+  "name": "No Fake News",
+  "description": "Aplicativo para identificação de fake news.",
+  "version": "1.0",
+  "manifest_version": 2,
+  "permissions": [
+    "activeTab",
+    "declarativeContent",
+    "storage",
+    "contextMenus",
+    "tabs"
+  ],
+  "background": {
+    "scripts": [
+      "nofake.js"
+    ],
+    "persistent": false
+  },
+  "options_ui": {
+    "page": "graficos.html",
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_popup": "nofake.html",
+    "default_icon": {
+      "128": "favicon.png"
+    }
+  },
+  "icons": {
+    "128": "favicon.png"
+  }
+}

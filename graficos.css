@@ -1,0 +1,33 @@
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+    background-image: linear-gradient(#00a2e8, white);
+}
+
+#title {
+    color: white;
+}
+
+#pageTitle{
+    width: 100%;
+}
+
+#graficos{
+    padding: 1%;
+    width: 100%;
+    background-color: white;
+}
+
+#grafico1{
+    border-right: 1px solid gray;
+}
+
+#grafico2{
+    border-top: 1px solid gray;
+}

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    body {
+      height: auto;
+      width: 300px;
+      outline: none;
+
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+  </style>
+  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <script src="jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="bootstrap/js/bootstrap.min.js"></script>
+  <meta charset="UTF-8">
+</head>
+
+<body>
+  <h1 class="text-center">No Fake News
+    <img src="grafico.png" title="Estatísticas" id="go-to-options" style="width:20px; height: 20px;margin-top:-40px; cursor: pointer; margin-right: -10px">
+  </h1>
+  <hr>
+
+  <!-- Tela index -->
+
+  <div id="indexScreen" class="container">
+    <div id="indexScreenLoged" style="display: none;">
+      <h3 class="text-center">Avaliação: <label id="rating"></label>
+        <img src="interrogacao.png" title="Info" id="imgAvaliacaoInfo" style="width:14px; height: 14px;margin-top:-3px; cursor: pointer;">
+      </h3>
+      <br>
+      <div style="min-height: 222px;">
+        <table class="table table-hover" id="tableMyNews">
+          <thead>
+            <tr>
+              <th scope="col">Id</th>
+              <th scope="col">Resultado</th>
+            </tr>
+          </thead>
+          <tbody style="cursor: pointer;">
+          </tbody>
+        </table>
+      </div>
+      <div class="row">
+        <div class="col-xs-6">
+          <button type="button" id="listMyNewsButtonPrev" class="btn btn-primary btn-block">Anterior</button>
+        </div>
+        <div class="col-xs-6">
+          <button type="button" id="listMyNewsButtonNext" class="btn btn-primary btn-block">Próximo</button>
+        </div>
+      </div>
+      <p></p>
+    </div>
+    <button type="button" id="verNoticias" class="btn btn-primary btn-block">Lista de notícias</button>
+    <button type="button" id="buscarNoticia" class="btn btn-primary btn-block">Procurar notícia</button>
+    <button type="button" id="mostraLogin" class="btn btn-success btn-block">Login / Criar conta</button>
+    <p></p>
+  </div>
+
+  <!-- Tela Login -->
+
+  <div id="loginScreen" class="container" style="display: none;">
+    <div class="form-group">
+      <label for="login">Login:</label>
+      <input type="text" autocomplete="off" class="form-control" id="login">
+      <p></p>
+      <label for="pwd">Senha:</label>
+      <input type="password" class="form-control" id="pwd">
+      <p></p>
+      <button type="button" id="botaoLogar" class="btn btn-success btn-block">Login</button>
+      <p></p>
+      <button type="button" id="mostraCadastro" class="btn btn-primary btn-block">Criar conta</button>
+      <p></p>
+      <button type="button" id="mostraIndex" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela cadastro -->
+
+  <div id="cadastroScreen" class="container" style="display: none;">
+    <div class="form-group">
+      <label for="login">Login:</label>
+      <input type="text" autocomplete="off" class="form-control" id="loginCadastro">
+      <p></p>
+      <label for="pwd">Senha:</label>
+      <input type="password" class="form-control" id="pwdCadastro">
+      <p></p>
+      <label for="pwd">Confirmar senha:</label>
+      <input type="password" class="form-control" id="pwdConfirm">
+      <p></p>
+      <button type="button" id="botaoFinalizarCadastro" class="btn btn-success btn-block">Criar conta</button>
+      <p></p>
+      <div class="alert alert-danger" role="alert" id="alertSenhaErradaCadastro" style="display:none">
+        A senha não corresponde a confirmação da senha.
+      </div>
+      <p></p>
+      <button type="button" id="voltaLoginCadastro" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela de busca de noticia -->
+
+  <div id="searchScreen" class="container" style="display: none;">
+    <h3 class="text-center">Procurar notícia
+      <small class="text-muted">
+        <br> Selecione um ou mais parâmetros de busca</small>
+    </h3>
+    <br>
+    <div class="form-group">
+      <label for="login">Texto:</label>
+      <input type="text" autocomplete="off" class="form-control" id="inputBuscaTexto">
+      <p></p>
+      <label for="pwd">Url:</label>
+      <input type="text" autocomplete="off" class="form-control" id="inputBuscaUrl">
+      <p></p>
+      <label for="pwd">Id:</label>
+      <input type="text" autocomplete="off" class="form-control" id="inputBuscaId">
+      <p></p>
+      <button type="button" id="botaoBusca" class="btn btn-primary btn-block">Procurar</button>
+      <p></p>
+      <button type="button" id="buscaVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela de ver lista de noticias -->
+
+  <div id="listScreen" class="container" style="display: none;">
+    <p class="text-center lead">Clique na notícia para visualizar</p>
+    <div style="min-height: 222px;">
+      <table id="tableNewsGeral" class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Texto</th>
+            <th scope="col">Url</th>
+            <th scope="col">Resultado</th>
+          </tr>
+        </thead>
+        <tbody style="cursor: pointer;">
+        </tbody>
+      </table>
+    </div>
+    <div class="row">
+      <div class="col-xs-5">
+        <button type="button" id="listButtonPrev" class="btn btn-primary btn-block">Anterior</button>
+      </div>
+      <div class="col-xs-2 text-center lead" id="paginaNewsGeral" style="margin-top: 7px">
+        1
+      </div>
+      <div class="col-xs-5">
+        <button type="button" id="listButtonNext" class="btn btn-primary btn-block">Próximo</button>
+      </div>
+    </div>
+
+    <button type="button" id="listVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
+    <p></p>
+  </div>
+
+  <!-- Tela de visualizacao de noticia do usuario -->
+
+  <div id="viewScreenMyNews" class="container" style="display: none;">
+    <div>
+      <label for="Id">Id:</label>
+      <input type="text" autocomplete="off" readonly class="form-control" id="idViewScreenMyNews">
+      <p></p>
+      <label for="Text">Texto:</label><br>
+      <textarea cols="69" id="textAreaViewScreenMyNews" readonly rows="5" style="resize: none"></textarea>
+      <p></p>
+      <label for="Url">Url:</label><br>
+      <label style="overflow:auto" id="urlScreenMyNews"></label>
+      <p></p>
+      <label for="Result">Resultado:</label>
+      <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenMyNews">
+      <p></p>
+      <button type="button" id="viewScreenMyNewsVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela de visualizacao de noticias gerais / votar -->
+
+  <div id="viewScreenNewsGeral" class="container" style="display: none;">
+    <div>
+      <label for="Id">Id:</label>
+      <input type="text" autocomplete="off" readonly class="form-control" id="idViewScreenGeral">
+      <p></p>
+      <label for="Text">Texto:</label><br>
+      <textarea cols="69" id="textAreaViewScreenGeral" readonly rows="4" style="resize: none"></textarea>
+      <p></p>
+      <label for="Url">Url:</label><br>
+      <label style="overflow:auto" id="urlScreenGeral"></label>
+      <p></p>
+      <label for="Result">Resultado:</label>
+      <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenGeral">
+      <p></p>
+      <div class="row" id="botoesDeVoto" style="display: none;">
+        <div class="col-xs-6">
+          <button type="button" id="votarFake" class="btn btn-danger btn-block">FAKE</button>
+        </div>
+        <div class="col-xs-6">
+          <button type="button" id="votarNaoFake" class="btn btn-success btn-block">VERDADEIRA</button>
+        </div>
+      </div>
+      <p></p>
+      <div id="alertaDoVoto" class="text-center"></div>
+      <p></p>
+      <button type="button" id="viewScreenNewsGeralVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela de informacoes sobre avaliacao -->
+
+  <div id="avaliacaoInfoScreen" class="container" style="display: none;">
+    <div>
+      <h3 class="text-center">Avaliação
+        <small class="text-muted">
+          <br>A avaliação é o nível de confiança de um usuário.</small>
+      </h3>
+      <hr>
+      <h3 class="display-4">O que é?</h3>
+      <p class="lead">A avaliação é utilizada para garantir que usuários maliciosos não publiquem notícias que são verdadeiras
+        classificando-as como falsas, vice-versa, ou votem intencionalmente de forma errada em uma notícia.
+      </p>
+      <h3 class="display-4">Como funciona?</h3>
+      <p class="lead">A avaliação é iniciada, por padrão, em 5, a cada ação realizada, como votar e enviar para analise uma
+        notícia, este valor é alterado dependendo da notícia ter sido classificada como verdadeira ou falsa.
+      </p>
+      <h3 class="display-4">Valores</h3>
+      <p class="lead">
+        <ul class="list-group">
+          <li class="list-group-item"><b>Valor inicial:</b> 5</li>
+          <li class="list-group-item"><b>Valor mínimo: </b>3</li>
+          <li class="list-group-item"><b>Valor de observação: </b>4.5</li>
+          <li class="list-group-item"><b>Valor máximo: </b>10</li>
+          <li class="list-group-item"><b>Votar em notícia com voto condizendo com o resultado final: </b>+0.1</li>
+          <li class="list-group-item"><b>Votar em notícia com voto não condizendo com o resultado final: </b>-0.2</li>
+          <li class="list-group-item"><b>Enviar notícia como falsa e notícia ser considerada verdadeira: </b>-0.5</li>
+          <li class="list-group-item"><b>Enviar notícia e ser confirmada como falsa: </b>+0.5</li>
+          <li class="list-group-item"><b>Enviar conteúdo impróprio ou que não é uma notícia: </b>-3.5</li>
+        </ul>
+        <p class="lead">
+          Caso o usuário atinja o valor máximo ele recebe o status de "Membro exemplar" e recebe algumas vantagens, veja a lista de
+          vantagens para mais informações.
+        </p>
+        <p class="lead">
+          Caso o usuário atinja uma avaliação inferior ao valor de observação, ele perde algumas vantagens do usuário normal até que
+          ultrapasse este valor.
+        </p>
+        <p class="lead">
+          Caso o usuário atinja uma avaliação inferior ao valor mínimo ele é banido do sistema.
+        </p>
+
+      </p>
+      <h3 class="display-4">Lista de vantagens</h3>
+      <table class="table table-hover">
+        <thead class="text-center">
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Lista de observação</th>
+            <th scope="col">Normal</th>
+            <th scope="col">Membro exemplar</th>
+          </tr>
+        </thead>
+        <tbody class="text-center" style="cursor: pointer;">
+          <tr>
+            <th scope="row">Nº de votos necessários para notícia ser considerada falsa</th>
+            <td>30</td>
+            <td>20</td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <th scope="row">Nº de votos necessários para notícia ser considerada verdadeira</th>
+            <td>30</td>
+            <td>20</td>
+            <td>10</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <button type="button" id="avaliacaoInfoVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela de resultado da busca -->
+
+  <div id="viewResultadoBusca" class="container" style="display: none;">
+    <div>
+      <div id="divTableResultadoBusca" style="display: none;">
+        <h3 class="text-center">Resultado
+        </h3>
+        <div style="min-height: 222px;">
+          <table class="table table-hover" id="tableResultadoBusca">
+            <thead>
+              <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Resultado</th>
+              </tr>
+            </thead>
+            <tbody style="cursor: pointer;">
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <button type="button" id="listResultadoBuscaButtonPrev" class="btn btn-primary btn-block">Anterior</button>
+          </div>
+          <div class="col-xs-6">
+            <button type="button" id="listResultadoBuscaButtonNext" class="btn btn-primary btn-block">Próximo</button>
+          </div>
+        </div>
+        <p></p>
+      </div>
+      <div id="divBuscaNaoAchou" style="display: none;">
+        <h3 class="text-center">Nada encontrado!
+          <small class="text-muted">
+            <br>Tente mudar os parâmetros de busca.</small>
+        </h3>
+      </div>
+      <p></p>
+      <button type="button" id="voltaBuscaProcurar" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <!-- Tela de visualizacao de noticia de busca -->
+
+  <div id="viewScreenNewsBusca" class="container" style="display: none;">
+    <div>
+      <label for="Id">Id:</label>
+      <input type="text" autocomplete="off" readonly class="form-control" id="idViewScreenNewsBusca">
+      <p></p>
+      <label for="Text">Texto:</label><br>
+      <textarea cols="69" id="textAreaViewScreenNewsBusca" readonly rows="5" style="resize: none"></textarea>
+      <p></p>
+      <label for="Url">Url:</label><br>
+      <label style="overflow:auto" id="urlScreenNewsBusca"></label>
+      <p></p>
+      <label for="Result">Resultado:</label>
+      <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenNewsBusca">
+      <p></p>
+      <button type="button" id="viewScreenMNewsBuscaVoltaTabBusca" class="btn btn-warning btn-block">Voltar</button>
+      <p></p>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="nofake.js"></script>
+</body>
+
+</html>
