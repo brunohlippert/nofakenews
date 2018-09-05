@@ -22,15 +22,11 @@ function arrumaTela() {
 anychart.onDocumentReady(function () {
     ///
     ///
-    ///             1
+    ///             GRAFICO DE PIZZA
     ///
     //
     // create pie chart with passed data
-    var chart = anychart.pie3d([
-        ['Fake', 457],
-        ['Não fake', 300],
-        ['Não avaliada', 98]
-    ]);
+    var chart = anychart.pie3d(getDataPizza());
 
     // set chart title text settings
     chart.title('Notícias avaliadas')
@@ -46,10 +42,10 @@ anychart.onDocumentReady(function () {
 
     //
     //
-    //          2
+    //          GRAFICO DE LINHAS
     //
     //
-    var dataSet = anychart.data.set(getData());
+    var dataSet = anychart.data.set(getDataLinhas());
 
     // map data for the first series, take x from the zero column and value from the first column of data set
     var seriesData_1 = dataSet.mapAs({
@@ -146,7 +142,7 @@ anychart.onDocumentReady(function () {
 
     //
     //
-    //              3
+    //              GRAFICO DE COLUNAS
     //
     //
 
@@ -160,13 +156,7 @@ anychart.onDocumentReady(function () {
     chart.title('Top 5 sites com fake news');
 
     // create area series with passed data
-    var series = chart.column([
-        ['noticiabrasil.com', '80540'],
-        ['webjornal.com.br', '94190'],
-        ['noticiasja.net', '102610'],
-        ['jornalmatinal.net', '110430'],
-        ['facebook.com', '128000']
-    ]);
+    var series = chart.column(getDataColunas());
 
     // set series tooltip settings
     series.tooltip().titleFormat('{%X}');
@@ -201,7 +191,8 @@ anychart.onDocumentReady(function () {
 
 });
 
-function getData() {
+//para o grafico de linhas - deve ser substituido pelos dados das fake news
+function getDataLinhas() {
     return [
         ['Janeiro/18', 500, 250, 750],
         ['Fevereiro/18', 450, 200, 650],
@@ -211,5 +202,23 @@ function getData() {
         ['Junho/18', 546, 430, 902],
         ['Julho/18', 234, 140, 415],
         ['Agosto/18', 523, 256, 789],
+    ]
+}
+
+function getDataColunas(){
+    return [
+        ['noticiabrasil.com', '80540'],
+        ['webjornal.com.br', '94190'],
+        ['noticiasja.net', '102610'],
+        ['jornalmatinal.net', '110430'],
+        ['facebook.com', '128000']
+    ]
+}
+
+function getDataPizza(){
+    return [
+        ['Fake', 457],
+        ['Não fake', 300],
+        ['Não avaliada', 98]
     ]
 }
