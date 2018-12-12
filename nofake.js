@@ -37,15 +37,11 @@ chrome.runtime.onInstalled.addListener(function () {
 
 });
 
-
-
 //
 //
 //        NOFAKE.HTML SCRIPTS
 //
 //
-
-
 
 //Mostra a tela de login e esconde a tela inicial ou desconecta o usuario
 function mostraLoginOuDesconecta() {
@@ -59,8 +55,6 @@ function mostraLoginOuDesconecta() {
       $("#loginScreen").slideDown();
     }
   });
-
-
 }
 
 //Mostra a tela de resultado de busca
@@ -194,7 +188,7 @@ function mostraNoticiaTableNewsGeral(noticia) {
         $("#botoesDeVoto").show();
       }
     });
-  } 
+  }
   else
     $("#botoesDeVoto").hide();
   $("#viewScreenNewsGeral").show();
@@ -219,31 +213,16 @@ function voltaAvaliacaoInfoScreen() {
   $("#indexScreen").show();
 }
 
-function finalizarCadastro() {
-  $("#alertSenhaErradaCadastro").hide();
-  var nome, senha, confirmSenha;
-  nome = $("#loginCadastro").val();
-  senha = $("#pwdCadastro").val();
-  confirmSenha = $("#pwdConfirm").val();
 
-  if (senha != confirmSenha) {
-    $("#pwdCadastro").val("");
-    $("#pwdConfirm").val("");
-    $("#alertSenhaErradaCadastro").show();
-  } else {
-    //cria a conta
-  }
-}
 
 //FUNCOES ESPECIAS DE HTML
 
 function ativaFuncoesDeLogado() {
   $("#botoesDeVoto").show();
   $("#indexScreenLoged").show();
-  $("#mostraLogin").html(usuario.login + " - Sair");
-  $("#rating").html(usuario.avaliacao);
-  $("#login").val("");
-  $("#pwd").val("");
+  $("#mostraLogin").html("Sair");
+  //$("#rating").html(usuario.avaliacao);
+  $("#loginPrivateKey").val("");
 
   chrome.contextMenus.create({
     "title": "Acho que este link é fake news, enviar.", "contexts": ["link"],
@@ -260,10 +239,6 @@ function ativaFuncoesDeLogado() {
     "id": "imageFakeNews"
   });
 
-  // Create a parent item
-  
-
-  
   carregaNoticiasUsuario();
 }
 
@@ -336,7 +311,7 @@ n7.validation = false;
 
 n8.news_id = "efgegkoerergergergergeojfiowf";
 n8.texto = "Lolapalusa é festival de drogado";
-n8.url = "http://www.google.com/lolapalusa";
+n8.url = "http://www.google.com/lolapalusa";  
 n8.validation = true;
 
 n9.news_id = "w8f0w8dfhtrhrtherhh90";
@@ -366,15 +341,27 @@ n13.validation = true;
 
 noticias = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13];
 
-
+//LOGIN
 function logar() {
-  if (usuario.login == $("#login").val() && usuario.senha == $("#pwd").val()) {
-    chrome.storage.sync.set({ logado: true, usuario: usuario }, function () {
-      console.log(usuario.avaliacao);
+  var privKey = $("#loginPrivateKey").val();
+  
+  if (privKey.trim() !== "") {
+    chrome.storage.sync.set({ logado: true, privKey: privKey }, function () {
       ativaFuncoesDeLogado();
       mostraIndex();
     });
+  }else {
+    //Não informou ou gerou priv key
   }
+}
+
+
+function gerarPrivKey(){
+  var keypair = require('keypair');
+  var conf = new Object();
+  conf.bits = 1024;
+  var pair = keypair(conf);
+  $("#loginPrivateKey").val(pair.private);
 }
 
 //
@@ -474,7 +461,7 @@ function adicionaNoticiaMyNews(index) {
         noticia = element;
       }
     });
-      mostraNoticiaTableMyNews(noticia);
+    mostraNoticiaTableMyNews(noticia);
   });
 }
 
@@ -604,7 +591,7 @@ function adicionaNoticiaResultadoBusca(index) {
         noticia = element;
       }
     });
-      mostraNoticiaTableResultadoBusca(noticia);
+    mostraNoticiaTableResultadoBusca(noticia);
   });
 }
 
@@ -631,8 +618,6 @@ function resultadoBuscaPreviousPage() {
 
 document.getElementById('mostraLogin').addEventListener('click', mostraLoginOuDesconecta);
 document.getElementById('mostraIndex').addEventListener('click', mostraIndex);
-document.getElementById('mostraCadastro').addEventListener('click', mostraCadastro);
-document.getElementById('voltaLoginCadastro').addEventListener('click', voltaLoginCadastro);
 document.getElementById('buscarNoticia').addEventListener('click', mostraBuscarNoticias);
 document.getElementById('buscaVoltaIndex').addEventListener('click', buscaVoltaIndex);
 document.getElementById('verNoticias').addEventListener('click', verNoticias);
@@ -641,7 +626,7 @@ document.getElementById('viewScreenMyNewsVoltaIndex').addEventListener('click', 
 document.getElementById('viewScreenNewsGeralVoltaIndex').addEventListener('click', viewScreenNewsGeralVoltaIndex);
 document.getElementById('imgAvaliacaoInfo').addEventListener('click', mostraAvaliacaoInfoScreen);
 document.getElementById('avaliacaoInfoVoltaIndex').addEventListener('click', voltaAvaliacaoInfoScreen);
-document.getElementById('botaoLogar').addEventListener('click', logar);
+document.getElementById('botaoDefinePrivKey').addEventListener('click', logar);
 document.getElementById('listMyNewsButtonNext').addEventListener('click', myNewsNextPage);
 document.getElementById('listMyNewsButtonPrev').addEventListener('click', myNewsPreviousPage);
 document.getElementById('listButtonNext').addEventListener('click', geralNextPage);
@@ -653,9 +638,9 @@ document.getElementById('voltaBuscaProcurar').addEventListener('click', voltaTel
 document.getElementById('listResultadoBuscaButtonNext').addEventListener('click', resultadoBuscaNextPage);
 document.getElementById('listResultadoBuscaButtonPrev').addEventListener('click', resultadoBuscaPreviousPage);
 document.getElementById('viewScreenMNewsBuscaVoltaTabBusca').addEventListener('click', viewScreenTableResultadoBusca);
-document.getElementById('botaoFinalizarCadastro').addEventListener('click', finalizarCadastro);
+document.getElementById('gerarPrivKey').addEventListener('click', gerarPrivKey);
 
-document.getElementById('go-to-options').addEventListener('click', function() {
+document.getElementById('go-to-options').addEventListener('click', function () {
   if (chrome.runtime.openOptionsPage) {
     chrome.runtime.openOptionsPage();
   } else {

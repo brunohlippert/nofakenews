@@ -24,6 +24,9 @@
 </head>
 
 <body>
+
+
+
   <h1 class="text-center">No Fake News
     <img src="grafico.png" title="Estatísticas" id="go-to-options" style="width:20px; height: 20px;margin-top:-40px; cursor: pointer; margin-right: -10px">
   </h1>
@@ -69,42 +72,20 @@
 
   <div id="loginScreen" class="container" style="display: none;">
     <div class="form-group">
-      <label for="login">Login:</label>
-      <input type="text" autocomplete="off" class="form-control" id="login">
-      <p></p>
-      <label for="pwd">Senha:</label>
-      <input type="password" class="form-control" id="pwd">
-      <p></p>
-      <button type="button" id="botaoLogar" class="btn btn-success btn-block">Login</button>
-      <p></p>
-      <button type="button" id="mostraCadastro" class="btn btn-primary btn-block">Criar conta</button>
-      <p></p>
-      <button type="button" id="mostraIndex" class="btn btn-warning btn-block">Voltar</button>
-      <p></p>
-    </div>
-  </div>
-
-  <!-- Tela cadastro -->
-
-  <div id="cadastroScreen" class="container" style="display: none;">
-    <div class="form-group">
-      <label for="login">Login:</label>
-      <input type="text" autocomplete="off" class="form-control" id="loginCadastro">
-      <p></p>
-      <label for="pwd">Senha:</label>
-      <input type="password" class="form-control" id="pwdCadastro">
-      <p></p>
-      <label for="pwd">Confirmar senha:</label>
-      <input type="password" class="form-control" id="pwdConfirm">
-      <p></p>
-      <button type="button" id="botaoFinalizarCadastro" class="btn btn-success btn-block">Criar conta</button>
-      <p></p>
-      <div class="alert alert-danger" role="alert" id="alertSenhaErradaCadastro" style="display:none">
-        A senha não corresponde a confirmação da senha.
+      <label>Insira ou gere uma chave privada.</label>
+      <label><b>ANTENÇÃO</b>: esta chave privada é a única forma de acessar sua conta, portanto guarde
+        ela em um local seguro.<label>
+      <hr>
+      <div class="form-group">
+        <label for="loginPrivateKey">Login (Private Key):</label>
+        <textarea style="resize: none" rows="4" cols="27" id="loginPrivateKey" autocomplete="off"></textarea>
+        <p></p>
+        <button type="button" id="botaoDefinePrivKey" class="btn btn-success btn-block">Usar chave</button>
+        <p></p>
+        <button type="button" id="gerarPrivKey" class="btn btn-success btn-block">Gerar private key</button>
+        <p></p>
+        <button type="button" id="mostraIndex" class="btn btn-warning btn-block">Voltar</button>
       </div>
-      <p></p>
-      <button type="button" id="voltaLoginCadastro" class="btn btn-warning btn-block">Voltar</button>
-      <p></p>
     </div>
   </div>
 
@@ -352,11 +333,13 @@
       <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenNewsBusca">
       <p></p>
       <button type="button" id="viewScreenMNewsBuscaVoltaTabBusca" class="btn btn-warning btn-block">Voltar</button>
+
       <p></p>
     </div>
   </div>
 
-  <script type="text/javascript" src="nofake.js"></script>
+  <!-- <script type="text/javascript" src="nofake.js"></script> -->
+  <script src="bundle.js"></script>
 </body>
 
 </html>
