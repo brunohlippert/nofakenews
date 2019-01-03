@@ -36,8 +36,9 @@
 
   <div id="indexScreen" class="container">
     <div id="indexScreenLoged" style="display: none;">
+      <img src="chave.jpg" title="Copiar chave" class="pull-right" id="imgChave" style="width:25px; height: 25px;margin-top:-3px; cursor: pointer;">
       <h3 class="text-center">Avaliação: <label id="rating"></label>
-        <img src="interrogacao.png" title="Info" id="imgAvaliacaoInfo" style="width:14px; height: 14px;margin-top:-3px; cursor: pointer;">
+        <img src="interrogacao.png" title="Info" id="imgAvaliacaoInfo" style="width:14px; height: 14px;margin-top:-3px; cursor: pointer; ">
       </h3>
       <br>
       <div style="min-height: 222px;">
@@ -72,17 +73,19 @@
 
   <div id="loginScreen" class="container" style="display: none;">
     <div class="form-group">
-      <label>Insira ou gere uma chave privada.</label>
-      <label><b>ANTENÇÃO</b>: esta chave privada é a única forma de acessar sua conta, portanto guarde
+      <label>Insira ou gere uma chave.</label>
+      <label><b>ANTENÇÃO</b>: esta chave é a única forma de acessar sua conta, portanto guarde
         ela em um local seguro.<label>
       <hr>
       <div class="form-group">
-        <label for="loginPrivateKey">Login (Private Key):</label>
-        <textarea style="resize: none" rows="4" cols="27" id="loginPrivateKey" autocomplete="off"></textarea>
+        <label for="loginprivKey">Login (Chave):</label>
+        <textarea style="resize: none" rows="4" cols="27" id="loginprivKey" autocomplete="off"></textarea>
         <p></p>
-        <button type="button" id="botaoDefinePrivKey" class="btn btn-success btn-block">Usar chave</button>
+        <div class="alert alert-danger" id="alertLogin" style="display: none" role="alert"></div>
         <p></p>
-        <button type="button" id="gerarPrivKey" class="btn btn-success btn-block">Gerar private key</button>
+        <button type="button" id="botaoDefineprivKey" class="btn btn-success btn-block">Usar chave</button>
+        <p></p>
+        <button type="button" id="gerarprivKey" class="btn btn-success btn-block">Gerar chave</button>
         <p></p>
         <button type="button" id="mostraIndex" class="btn btn-warning btn-block">Voltar</button>
       </div>
@@ -339,6 +342,7 @@
   </div>
 
   <!-- <script type="text/javascript" src="nofake.js"></script> -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
   <script src="bundle.js"></script>
 </body>
 

@@ -1,3 +1,10 @@
+const BASE_URL = "http://localhost:3000";
+
+//const BASE_URL = "http://conseg.lad.pucrs.br:3000";
+
+const NodeRSA = require('node-rsa');
+const aes = require('js-crypto-aes');
+const jQuery = require('jquery');
 //
 //
 //    CHROME SCRIPTS
@@ -5,20 +12,74 @@
 //
 
 function onClickHandler(info, tab) {
-  var obj;
-  if (info.srcUrl != undefined) {
-    obj = toJSON(info.srcUrl, "");
-  } else if (info.linkUrl != undefined) {
-    obj = toJSON(info.linkUrl, "");
-  } else if (info.pageUrl != undefined) {
-    var txt = "";
-    if (info.selectionText != undefined) {
-      txt = info.selectionText;
-    }
-    obj = toJSON(info.pageUrl, txt);
+  var voto = true;
+  if (info.menuItemId === "noFakeNewsFake") {
+    voto = false;
   }
-  console.log(obj);
+  var obj;
+  obj = toJSON(info.pageUrl);
+  enviarNoticia(obj.url, voto);
+
 };
+
+function enviarNoticia(urlNews, voto) {
+
+  chrome.storage.sync.get(['aes'], function (result) {
+    aesKey = result.aes;
+    chrome.storage.sync.get(['privKey'], function (result) {
+      privKey = atob(result.privKey);
+
+      var key = new NodeRSA(privKey);
+      var publicKey = key.exportKey(["public"]);
+
+      //Aes encrypt data
+      vote = {
+        "userPublicKey": publicKey,
+        "vote": voto,
+        "newsUrl": btoa(urlNews)
+      };
+
+      vote = JSON.stringify(vote);
+
+      signature = key.sign(vote, ["base64"]);
+
+      encryptedVote = {
+        "vote": btoa(vote),
+        "signature": btoa(signature)
+      };
+      iv = 4242424242424242;
+      
+      encryptedVote = new TextEncoder("utf-8").encode(JSON.stringify(encryptedVote));
+      aesKey = new TextEncoder("utf-8").encode(aesKey);
+      iv = new TextEncoder("utf-8").encode(iv);
+
+      aes.encrypt(encryptedVote, aesKey, { name: 'AES-CBC', iv }).then((encrypted) => {
+        
+        var encyVoteSigned = new TextDecoder("utf-8").decode(encrypted);
+        jQuery.ajax({
+          async: true,
+          crossDomain: true,
+          url: BASE_URL + "/vote",
+          type: 'POST',
+          headers: {
+            "cache-control": "no-cache",
+            "content-type": "application/x-www-form-urlencoded"
+          },
+          data: {
+            "userPublicKey": btoa(publicKey),
+            "encryptedVote": encyVoteSigned
+          },
+          success: function (result) {
+            console.log("Gloria a deux");
+          },
+          error: function (jqXHR, status, err) {
+            console.log("Erro");
+          }
+        });
+      });
+    });
+  });
+}
 
 function toJSON(url, text) {
   var obj = new Object();
@@ -33,7 +94,8 @@ chrome.contextMenus.onClicked.addListener(onClickHandler);
 chrome.runtime.onInstalled.addListener(function () {
   // Create one test item for each context type.
 
-  chrome.contextMenus.create({ "title": "No Fake News", "id": "noFakeNews" });
+  chrome.contextMenus.create({ "title": "Notícia Falsa, enviar para analise", "id": "noFakeNewsFake" });
+  chrome.contextMenus.create({ "title": "Notícia Verdadeira, enviar para analise", "id": "noFakeNewsVerdade" });
 
 });
 
@@ -47,7 +109,7 @@ chrome.runtime.onInstalled.addListener(function () {
 function mostraLoginOuDesconecta() {
   chrome.storage.sync.get(['logado'], function (result) {
     if (result.logado) {
-      chrome.storage.sync.set({ logado: false, usuario: undefined }, function () {
+      chrome.storage.sync.set({ logado: false, privKey: undefined }, function () {
         desativaFuncoesDeLogado();
       });
     } else {
@@ -76,6 +138,8 @@ function voltaTelaResultBusca() {
 function mostraIndex() {
   $("#loginScreen").hide();
   $("#indexScreen").show();
+  $("#loginPrivateKey").val("");
+  $("#alertLogin").hide();
 }
 
 //Mostra a tela de cadastro e esconde a tela de login
@@ -223,22 +287,6 @@ function ativaFuncoesDeLogado() {
   $("#mostraLogin").html("Sair");
   //$("#rating").html(usuario.avaliacao);
   $("#loginPrivateKey").val("");
-
-  chrome.contextMenus.create({
-    "title": "Acho que este link é fake news, enviar.", "contexts": ["link"],
-    "id": "linkFakeNews"
-  });
-
-  chrome.contextMenus.create({
-    "title": "Acho que este texto é fake news, enviar.", "contexts": ["selection"],
-    "id": "selectionFakeNews"
-  });
-
-  chrome.contextMenus.create({
-    "title": "Acho que esta imagem é fake news, enviar.", "contexts": ["image"],
-    "id": "imageFakeNews"
-  });
-
   carregaNoticiasUsuario();
 }
 
@@ -311,7 +359,7 @@ n7.validation = false;
 
 n8.news_id = "efgegkoerergergergergeojfiowf";
 n8.texto = "Lolapalusa é festival de drogado";
-n8.url = "http://www.google.com/lolapalusa";  
+n8.url = "http://www.google.com/lolapalusa";
 n8.validation = true;
 
 n9.news_id = "w8f0w8dfhtrhrtherhh90";
@@ -341,27 +389,77 @@ n13.validation = true;
 
 noticias = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13];
 
-//LOGIN
+
+
+
+
+
+//
+//
+//      LOGIN
+//
+//
 function logar() {
-  var privKey = $("#loginPrivateKey").val();
-  
+  var privKey = $("#loginprivKey").val();
+
   if (privKey.trim() !== "") {
-    chrome.storage.sync.set({ logado: true, privKey: privKey }, function () {
-      ativaFuncoesDeLogado();
-      mostraIndex();
+    //Gera as chaves RSA
+    var key = new NodeRSA(privKey);
+    var publicKey = key.exportKey(["public"]);
+
+    $.ajax({
+      async: true,
+      crossDomain: true,
+      url: BASE_URL + "/createBlock",
+      type: 'POST',
+      headers: {
+        "cache-control": "no-cache",
+        "content-type": "application/x-www-form-urlencoded"
+      },
+      data: {
+        "userPublicKey": btoa(publicKey)
+      },
+      success: function (result) {
+        if (result.aesKey === undefined) {
+          $("#alertLogin").html("A chave informada é inválida");
+          $("#alertLogin").show();
+        } else {
+          //logado
+          chrome.storage.sync.set({ logado: true, privKey: btoa(privKey), aes: result.aesKey }, function () {
+            ativaFuncoesDeLogado();
+            mostraIndex();
+          });
+        }
+      },
+      error: function (jqXHR, status, err) {
+        console.log("Erro");
+      }
     });
-  }else {
-    //Não informou ou gerou priv key
+  } else {
+    $("#alertLogin").html("Informe ou gere uma chave privada");
+    $("#alertLogin").show();
   }
 }
 
 
-function gerarPrivKey(){
-  var keypair = require('keypair');
-  var conf = new Object();
-  conf.bits = 1024;
-  var pair = keypair(conf);
-  $("#loginPrivateKey").val(pair.private);
+function gerarprivKey() {
+  var key = new NodeRSA({ b: 1024 });
+  $("#loginprivKey").val(key.exportKey(["private"]));
+}
+
+function copiarChave() {
+  chrome.storage.sync.get(['privKey'], function (result) {
+    if (result.privKey) {
+      var $temp = $("<input>");
+      $("body").append($temp);
+      $temp.val(atob(result.privKey)).select();
+      document.execCommand("copy");
+      $temp.remove();
+
+      alert("Chave copiada, não revele este conteúdo a estranhos.");
+    }
+  });
+
 }
 
 //
@@ -370,9 +468,23 @@ function gerarPrivKey(){
 
 paginaNewsGeral = 1;
 function carregaNoticiasGeral() {
-  for (let index = 0; index < 5; index++) {
-    adicionaNoticiaGeral(index);
-  }
+  //Buscar news na api
+  $.ajax({
+    async: true,
+    crossDomain: true,
+    url: BASE_URL + "/trendingNews",
+    type: 'GET',
+    success: function (result) {
+      console.log(Object.values(result))
+    },
+    error: function (jqXHR, status, err) {
+      alert("Verifique sua conexão.");
+    }
+  });
+  //Add na tabela
+  // for (let index = 0; index < 5; index++) {
+  //   adicionaNoticiaGeral(index);
+  // }
 }
 
 function adicionaNoticiaGeral(index) {
@@ -626,7 +738,7 @@ document.getElementById('viewScreenMyNewsVoltaIndex').addEventListener('click', 
 document.getElementById('viewScreenNewsGeralVoltaIndex').addEventListener('click', viewScreenNewsGeralVoltaIndex);
 document.getElementById('imgAvaliacaoInfo').addEventListener('click', mostraAvaliacaoInfoScreen);
 document.getElementById('avaliacaoInfoVoltaIndex').addEventListener('click', voltaAvaliacaoInfoScreen);
-document.getElementById('botaoDefinePrivKey').addEventListener('click', logar);
+document.getElementById('botaoDefineprivKey').addEventListener('click', logar);
 document.getElementById('listMyNewsButtonNext').addEventListener('click', myNewsNextPage);
 document.getElementById('listMyNewsButtonPrev').addEventListener('click', myNewsPreviousPage);
 document.getElementById('listButtonNext').addEventListener('click', geralNextPage);
@@ -638,7 +750,8 @@ document.getElementById('voltaBuscaProcurar').addEventListener('click', voltaTel
 document.getElementById('listResultadoBuscaButtonNext').addEventListener('click', resultadoBuscaNextPage);
 document.getElementById('listResultadoBuscaButtonPrev').addEventListener('click', resultadoBuscaPreviousPage);
 document.getElementById('viewScreenMNewsBuscaVoltaTabBusca').addEventListener('click', viewScreenTableResultadoBusca);
-document.getElementById('gerarPrivKey').addEventListener('click', gerarPrivKey);
+document.getElementById('gerarprivKey').addEventListener('click', gerarprivKey);
+document.getElementById('imgChave').addEventListener('click', copiarChave);
 
 document.getElementById('go-to-options').addEventListener('click', function () {
   if (chrome.runtime.openOptionsPage) {
