@@ -28,10 +28,13 @@ function enviarNoticia(urlNews, voto) {
     aesKey = result.aes;
     chrome.storage.sync.get(['privKey'], function (result) {
       privKey = atob(result.privKey);
-
-      var key = new NodeRSA(privKey);
+      var key = new NodeRSA();
+      key.importKey(privKey, 'private')
+      key.setOptions({encryptionScheme: 'pkcs1'});
+      console.log(aesKey);
+      aesKey = key.decrypt(aesKey);
+      console.log(aesKey);
       var publicKey = key.exportKey(["public"]);
-
       //Aes encrypt data
       vote = {
         "userPublicKey": publicKey,
@@ -42,7 +45,6 @@ function enviarNoticia(urlNews, voto) {
       vote = JSON.stringify(vote);
 
       signature = key.sign(vote, ["base64"]);
-
       encryptedVote = {
         "vote": btoa(vote),
         "signature": btoa(signature)
@@ -50,7 +52,7 @@ function enviarNoticia(urlNews, voto) {
       iv = 4242424242424242;
       
       encryptedVote = new TextEncoder("utf-8").encode(JSON.stringify(encryptedVote));
-      aesKey = new TextEncoder("utf-8").encode(aesKey);
+      //aesKey = new TextEncoder("utf-8").encode(aesKey);
       iv = new TextEncoder("utf-8").encode(iv);
 
       aes.encrypt(encryptedVote, aesKey, { name: 'AES-CBC', iv }).then((encrypted) => {
