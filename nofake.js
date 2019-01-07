@@ -30,16 +30,19 @@ function enviarNoticia(urlNews, voto) {
       privKey = atob(result.privKey);
       var key = new NodeRSA();
       key.importKey(privKey, 'private')
-      key.setOptions({encryptionScheme: 'pkcs1'});
-      console.log(aesKey);
+      key.setOptions({ encryptionScheme: 'pkcs1' });
+      var Base64 = require('js-base64').Base64;
+      //Decript Aes
       aesKey = key.decrypt(aesKey);
-      console.log(aesKey);
+      var aesDecripted = aesKey.slice(92, aesKey.length);
+
       var publicKey = key.exportKey(["public"]);
       //Aes encrypt data
       vote = {
         "userPublicKey": publicKey,
         "vote": voto,
-        "newsUrl": btoa(urlNews)
+        "newsUrl": btoa(urlNews),
+        "date": Date.now()
       };
 
       vote = JSON.stringify(vote);
@@ -47,17 +50,19 @@ function enviarNoticia(urlNews, voto) {
       signature = key.sign(vote, ["base64"]);
       encryptedVote = {
         "vote": btoa(vote),
-        "signature": btoa(signature)
+        "signature": Base64.encode(signature)
       };
+      encryptedVote = JSON.stringify(encryptedVote);
       iv = 4242424242424242;
-      
-      encryptedVote = new TextEncoder("utf-8").encode(JSON.stringify(encryptedVote));
-      //aesKey = new TextEncoder("utf-8").encode(aesKey);
+
+      encryptedVote = new TextEncoder("utf-8").encode(encryptedVote);
       iv = new TextEncoder("utf-8").encode(iv);
 
-      aes.encrypt(encryptedVote, aesKey, { name: 'AES-CBC', iv }).then((encrypted) => {
-        
-        var encyVoteSigned = new TextDecoder("utf-8").decode(encrypted);
+      aes.encrypt(encryptedVote, aesDecripted, { name: 'AES-CBC', iv }).then((encrypted) => {
+
+        //var encyVoteSigned = new TextDecoder().decode(encrypted);
+        //var encyVoteSigned = String.fromCharCode.apply(null, encrypted);
+        encyVoteSigned = Base64.encode(encrypted);
         jQuery.ajax({
           async: true,
           crossDomain: true,
@@ -68,14 +73,16 @@ function enviarNoticia(urlNews, voto) {
             "content-type": "application/x-www-form-urlencoded"
           },
           data: {
-            "userPublicKey": btoa(publicKey),
-            "encryptedVote": encyVoteSigned
+            "encryptedVote": JSON.stringify(encyVoteSigned),
+            "userPublicKey": publicKey
           },
           success: function (result) {
             console.log("Gloria a deux");
           },
           error: function (jqXHR, status, err) {
-            console.log("Erro");
+            console.log(jqXHR);
+            console.log(status);
+            console.log(err);
           }
         });
       });
@@ -419,7 +426,7 @@ function logar() {
         "content-type": "application/x-www-form-urlencoded"
       },
       data: {
-        "userPublicKey": btoa(publicKey)
+        "userPublicKey": btoa( publicKey)
       },
       success: function (result) {
         if (result.aesKey === undefined) {
