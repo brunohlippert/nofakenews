@@ -40518,7 +40518,9 @@ function enviarNoticia(urlNews, voto) {
 
         //var encyVoteSigned = new TextDecoder().decode(encrypted);
         //var encyVoteSigned = String.fromCharCode.apply(null, encrypted);
-        encyVoteSigned = Base64.encode(encrypted);
+        encyVoteSigned = arrayBufferToBase64(encrypted);
+        console.log(arrayBufferToBase64(encrypted));
+        console.log(encyVoteSigned);
         jQuery.ajax({
           async: true,
           crossDomain: true,
@@ -40529,7 +40531,7 @@ function enviarNoticia(urlNews, voto) {
             "content-type": "application/x-www-form-urlencoded"
           },
           data: {
-            "encryptedVote": JSON.stringify(encyVoteSigned),
+            "encryptedVote": encyVoteSigned,
             "userPublicKey": publicKey
           },
           success: function (result) {
@@ -40544,6 +40546,16 @@ function enviarNoticia(urlNews, voto) {
       });
     });
   });
+}
+
+function arrayBufferToBase64( buffer ) {
+  var binary = '';
+  var bytes = new Uint8Array( buffer );
+  var len = bytes.byteLength;
+  for (var i = 0; i < len; i++) {
+      binary += String.fromCharCode( bytes[ i ] );
+  }
+  return btoa( binary );
 }
 
 function toJSON(url, text) {
@@ -40882,7 +40894,7 @@ function logar() {
         "content-type": "application/x-www-form-urlencoded"
       },
       data: {
-        "userPublicKey": btoa( publicKey)
+        "userPublicKey": btoa(publicKey)
       },
       success: function (result) {
         if (result.aesKey === undefined) {
@@ -40909,6 +40921,7 @@ function logar() {
 
 function gerarprivKey() {
   var key = new NodeRSA({ b: 1024 });
+  key.setOptions({ encryptionScheme: 'pkcs1' });
   $("#loginprivKey").val(key.exportKey(["private"]));
 }
 
