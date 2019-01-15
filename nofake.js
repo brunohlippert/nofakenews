@@ -1,7 +1,7 @@
 const BASE_URL = "http://localhost:3000";
 
 //const BASE_URL = "http://conseg.lad.pucrs.br:3000";
-
+//encodeURIComponent("aHR0cHM6Ly93d3cudzNzY2hvb2xzLmNvbS9qc3JlZi9qc3JlZl9lbmNvZGV1cmkuY/XNw")
 const NodeRSA = require('node-rsa');
 const aes = require('js-crypto-aes');
 const jQuery = require('jquery');
@@ -31,7 +31,6 @@ function enviarNoticia(urlNews, voto) {
       var key = new NodeRSA();
       key.importKey(privKey, 'private')
       key.setOptions({ encryptionScheme: 'pkcs1' });
-      var Base64 = require('js-base64').Base64;
       //Decript Aes
       aesKey = key.decrypt(aesKey);
       var aesDecripted = aesKey.slice(92, aesKey.length);
@@ -76,7 +75,7 @@ function enviarNoticia(urlNews, voto) {
             "userPublicKey": publicKey
           },
           success: function (result) {
-            
+            console.log(result)
           },
           error: function (jqXHR, status, err) {
             console.log(jqXHR);
@@ -255,24 +254,34 @@ function viewScreenMyNewsVoltaIndex() {
 function mostraNoticiaTableNewsGeral(noticia) {
   $("#listScreen").hide();
   $("body").width(600);
-  $("#idViewScreenGeral").val(noticia.news_id);
-  $("#textAreaViewScreenGeral").html(noticia.texto);
-  $("#urlScreenGeral").html("<a target='_blank' href='" + noticia.url + "'>" + noticia.url + "</a>");
+  $("#tituloViewScreenGeral").val("A FAZER");
+  $("#votosViewScreenGeral").val(noticia.voters.length);
+  $("#urlScreenGeral").html("<a target='_blank' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
   if (noticia.validation == undefined)
     $("#resultViewScreenGeral").val("EM VOTO");
   else if (noticia.validation)
     $("#resultViewScreenGeral").val("VERDADEIRA");
   else
     $("#resultViewScreenGeral").val("FAKE");
-  if (noticia.validation == undefined) {
+
+  if (noticia.reliabilityIndex === 1)
+    $("#resultViewScreenGeral").val("FATO");
+  else if (noticia.reliabilityIndex === 2)
+    $("#resultViewScreenGeral").val("NEUTRA");
+  else if (noticia.reliabilityIndex === 0)
+    $("#resultViewScreenGeral").val("FAKE");
+  else if (noticia.reliabilityIndex === 3)
+    $("#resultViewScreenGeral").val("PODE SER FAKE");
+  else if (noticia.reliabilityIndex === 4)
+    $("#resultViewScreenGeral").val("PODE SER FATO");
+
     chrome.storage.sync.get(['logado'], function (result) {
       if (result.logado) {
         $("#botoesDeVoto").show();
-      }
+      } else
+        $("#botoesDeVoto").hide();
     });
-  }
-  else
-    $("#botoesDeVoto").hide();
+  
   $("#viewScreenNewsGeral").show();
 }
 
@@ -317,99 +326,6 @@ function desativaFuncoesDeLogado() {
   chrome.contextMenus.removeAll();
   chrome.contextMenus.create({ "title": "No Fake News", "id": "noFakeNews" });
 }
-
-
-//
-//
-//        FUNCOES DE DADOS
-//
-//
-
-//USUARIOS
-
-usuario = new Object();
-usuario.login = "Bruno";
-usuario.key = "adoiasjdikasdpaskpdaspodkpodpiejwoqieq12312";
-usuario.memberId = "1";
-
-usuario.senha = "12345";
-usuario.avaliacao = 5;
-
-//NOTICIAS
-var n1 = new Object(), n2 = new Object(), n3 = new Object(), n4 = new Object(), n5 = new Object(),
-  n6 = new Object(), n7 = new Object(), n8 = new Object(), n9 = new Object(), n10 = new Object(), n11 = new Object(),
-  n12 = new Object(), n13 = new Object();
-
-n1.news_id = "sdassdasdasdadsadfs";
-n1.texto = "Brasil é campeão em corrupção";
-n1.url = "http://www.google.com/corrupcao";
-n1.validation = null;
-
-n2.news_id = "kkslqsdqwdqwdddkla";
-n2.texto = "Brasil é hexa";
-n2.url = "http://www.google.com/hexa";
-n2.validation = false;
-
-n3.news_id = "dsafqwdqwdqwdqwrthtrdasf";
-n3.texto = "Internacional na serie A";
-n3.url = "http://www.google.com/internacional";
-n3.validation = true;
-
-n4.news_id = "sdfsqqwqfqrweiqhrthrowei";
-n4.texto = "Papa é pop";
-n4.url = "http://www.google.com/papa";
-n4.validation = true;
-
-n5.news_id = "kkalsowfwertgeghtrjpqwe";
-n5.texto = "Banda calipso ganha premio de melhor banda do mundo";
-n5.url = "http://www.google.com/calipso";
-n5.validation = null;
-
-n6.news_id = "123e1ddrthtrhtrtrhtrhsd";
-n6.texto = "Gremio é time pequeno";
-n6.url = "http://www.google.com/gremio";
-n6.validation = true;
-
-n7.news_id = "sddsqeeqeqtrhefgwfwdsad";
-n7.texto = "Menino ney so cai";
-n7.url = "http://www.google.com/meninoney";
-n7.validation = false;
-
-n8.news_id = "efgegkoerergergergergeojfiowf";
-n8.texto = "Lolapalusa é festival de drogado";
-n8.url = "http://www.google.com/lolapalusa";
-n8.validation = true;
-
-n9.news_id = "w8f0w8dfhtrhrtherhh90";
-n9.texto = "PM abre edital para concurso 2018";
-n9.url = "http://www.google.com/pm";
-n9.validation = null;
-
-n10.news_id = "L00h3453463yã";
-n10.texto = "Lady gaga virá ao brasil amanhã";
-n10.url = "http://www.google.com/gaga";
-n10.validation = false;
-
-n11.news_id = "932ri34gerfhfwhergreriefj";
-n11.texto = "Hyperledger não da suporte aos desenvolvedores de graça";
-n11.url = "http://www.google.com/hyperledger";
-n11.validation = true;
-
-n12.news_id = "sdkiofw3twtwgefhekfiodwfm";
-n12.texto = "Dell vira empresa de caminhoes de lixo";
-n12.url = "http://www.google.com/dell";
-n12.validation = null;
-
-n13.news_id = "isd8f9dergregegergero0";
-n13.texto = "Outono sera estação das chuvas em 2018";
-n13.url = "http://www.google.com/tempo";
-n13.validation = true;
-
-noticias = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13];
-
-
-
-
 
 
 //
@@ -494,16 +410,16 @@ function carregaNoticiasGeral() {
     url: BASE_URL + "/trendingNews",
     type: 'GET',
     success: function (result) {
-      console.log(Object.values(result))
+      noticias = result;
+      // Add na tabela
+      for (let index = 0; index < 5 && index < noticias.length; index++) {
+        adicionaNoticiaGeral(index);
+      }
     },
     error: function (jqXHR, status, err) {
       alert("Verifique sua conexão.");
     }
   });
-  //Add na tabela
-  // for (let index = 0; index < 5; index++) {
-  //   adicionaNoticiaGeral(index);
-  // }
 }
 
 function adicionaNoticiaGeral(index) {
@@ -511,15 +427,17 @@ function adicionaNoticiaGeral(index) {
 
   var newRow = $("<tr>");
   var cols = "";
-  cols += '<th>' + noticia.news_id.substring(0, 10) + '...</th>';
-  cols += '<th>' + noticia.texto.substring(0, 20) + '...</th>';
-  cols += '<th>' + noticia.url.substring(11, 21) + '...</th>';
-  if (noticia.validation)
-    cols += '<td style="color: chartreuse">VERDADEIRA</td>';
-  else if (noticia.validation == null)
-    cols += '<td style="color: rgb(0, 0, 0)">EM VOTO</td>';
-  else
+  cols += '<th>' + atob(noticia.url).substring(0, 130) + '...</th>';
+  if (noticia.reliabilityIndex === 1)
+    cols += '<td style="color: chartreuse">FATO</td>';
+  else if (noticia.reliabilityIndex === 2)
+    cols += '<td style="color: rgb(0, 0, 0)">NEUTRA</td>';
+  else if (noticia.reliabilityIndex === 0)
     cols += '<td style="color: red">FAKE</td>';
+  else if (noticia.reliabilityIndex === 3)
+    cols += '<td style="color: blue">PODE SER FAKE</td>';
+  else if (noticia.reliabilityIndex === 4)
+    cols += '<td style="color: blue">PODE SER FATO</td>';
   newRow.append(cols);
   $("#tableNewsGeral").append(newRow);
 
@@ -527,7 +445,7 @@ function adicionaNoticiaGeral(index) {
     var id = $(this).find("th").html();
     var noticia = undefined;
     noticias.forEach(element => {
-      if (element.news_id.substring(0, 10) + "..." == id) {
+      if (atob(element.url).substring(0, 130) + "..." == id) {
         noticia = element;
       }
     });

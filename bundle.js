@@ -23778,7 +23778,7 @@ module.exports = _interopRequireWildcard;
 },{}],163:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":194}],164:[function(require,module,exports){
+},{"regenerator-runtime":193}],164:[function(require,module,exports){
 // Copyright 2011 Mark Cavage <mcavage@gmail.com> All rights reserved.
 
 
@@ -24086,7 +24086,7 @@ Reader.prototype._readTag = function (tag) {
 
 module.exports = Reader;
 
-},{"./errors":164,"./types":167,"assert":15,"safer-buffer":196}],167:[function(require,module,exports){
+},{"./errors":164,"./types":167,"assert":15,"safer-buffer":195}],167:[function(require,module,exports){
 // Copyright 2011 Mark Cavage <mcavage@gmail.com> All rights reserved.
 
 
@@ -24443,7 +24443,7 @@ Writer.prototype._ensure = function (len) {
 
 module.exports = Writer;
 
-},{"./errors":164,"./types":167,"assert":15,"safer-buffer":196}],169:[function(require,module,exports){
+},{"./errors":164,"./types":167,"assert":15,"safer-buffer":195}],169:[function(require,module,exports){
 // Copyright 2011 Mark Cavage <mcavage@gmail.com> All rights reserved.
 
 // If you have no idea what ASN.1 or BER is, see this:
@@ -34832,244 +34832,6 @@ return jQuery;
 } );
 
 },{}],171:[function(require,module,exports){
-(function (global){
-/*
- *  base64.js
- *
- *  Licensed under the BSD 3-Clause License.
- *    http://opensource.org/licenses/BSD-3-Clause
- *
- *  References:
- *    http://en.wikipedia.org/wiki/Base64
- */
-;(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined'
-        ? module.exports = factory(global)
-        : typeof define === 'function' && define.amd
-        ? define(factory) : factory(global)
-}((
-    typeof self !== 'undefined' ? self
-        : typeof window !== 'undefined' ? window
-        : typeof global !== 'undefined' ? global
-: this
-), function(global) {
-    'use strict';
-    // existing version for noConflict()
-    var _Base64 = global.Base64;
-    var version = "2.5.0";
-    // if node.js and NOT React Native, we use Buffer
-    var buffer;
-    if (typeof module !== 'undefined' && module.exports) {
-        try {
-            buffer = eval("require('buffer').Buffer");
-        } catch (err) {
-            buffer = undefined;
-        }
-    }
-    // constants
-    var b64chars
-        = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    var b64tab = function(bin) {
-        var t = {};
-        for (var i = 0, l = bin.length; i < l; i++) t[bin.charAt(i)] = i;
-        return t;
-    }(b64chars);
-    var fromCharCode = String.fromCharCode;
-    // encoder stuff
-    var cb_utob = function(c) {
-        if (c.length < 2) {
-            var cc = c.charCodeAt(0);
-            return cc < 0x80 ? c
-                : cc < 0x800 ? (fromCharCode(0xc0 | (cc >>> 6))
-                                + fromCharCode(0x80 | (cc & 0x3f)))
-                : (fromCharCode(0xe0 | ((cc >>> 12) & 0x0f))
-                   + fromCharCode(0x80 | ((cc >>>  6) & 0x3f))
-                   + fromCharCode(0x80 | ( cc         & 0x3f)));
-        } else {
-            var cc = 0x10000
-                + (c.charCodeAt(0) - 0xD800) * 0x400
-                + (c.charCodeAt(1) - 0xDC00);
-            return (fromCharCode(0xf0 | ((cc >>> 18) & 0x07))
-                    + fromCharCode(0x80 | ((cc >>> 12) & 0x3f))
-                    + fromCharCode(0x80 | ((cc >>>  6) & 0x3f))
-                    + fromCharCode(0x80 | ( cc         & 0x3f)));
-        }
-    };
-    var re_utob = /[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;
-    var utob = function(u) {
-        return u.replace(re_utob, cb_utob);
-    };
-    var cb_encode = function(ccc) {
-        var padlen = [0, 2, 1][ccc.length % 3],
-        ord = ccc.charCodeAt(0) << 16
-            | ((ccc.length > 1 ? ccc.charCodeAt(1) : 0) << 8)
-            | ((ccc.length > 2 ? ccc.charCodeAt(2) : 0)),
-        chars = [
-            b64chars.charAt( ord >>> 18),
-            b64chars.charAt((ord >>> 12) & 63),
-            padlen >= 2 ? '=' : b64chars.charAt((ord >>> 6) & 63),
-            padlen >= 1 ? '=' : b64chars.charAt(ord & 63)
-        ];
-        return chars.join('');
-    };
-    var btoa = global.btoa ? function(b) {
-        return global.btoa(b);
-    } : function(b) {
-        return b.replace(/[\s\S]{1,3}/g, cb_encode);
-    };
-    var _encode = buffer ?
-        buffer.from && Uint8Array && buffer.from !== Uint8Array.from
-        ? function (u) {
-            return (u.constructor === buffer.constructor ? u : buffer.from(u))
-                .toString('base64')
-        }
-        :  function (u) {
-            return (u.constructor === buffer.constructor ? u : new  buffer(u))
-                .toString('base64')
-        }
-        : function (u) { return btoa(utob(u)) }
-    ;
-    var encode = function(u, urisafe) {
-        return !urisafe
-            ? _encode(String(u))
-            : _encode(String(u)).replace(/[+\/]/g, function(m0) {
-                return m0 == '+' ? '-' : '_';
-            }).replace(/=/g, '');
-    };
-    var encodeURI = function(u) { return encode(u, true) };
-    // decoder stuff
-    var re_btou = new RegExp([
-        '[\xC0-\xDF][\x80-\xBF]',
-        '[\xE0-\xEF][\x80-\xBF]{2}',
-        '[\xF0-\xF7][\x80-\xBF]{3}'
-    ].join('|'), 'g');
-    var cb_btou = function(cccc) {
-        switch(cccc.length) {
-        case 4:
-            var cp = ((0x07 & cccc.charCodeAt(0)) << 18)
-                |    ((0x3f & cccc.charCodeAt(1)) << 12)
-                |    ((0x3f & cccc.charCodeAt(2)) <<  6)
-                |     (0x3f & cccc.charCodeAt(3)),
-            offset = cp - 0x10000;
-            return (fromCharCode((offset  >>> 10) + 0xD800)
-                    + fromCharCode((offset & 0x3FF) + 0xDC00));
-        case 3:
-            return fromCharCode(
-                ((0x0f & cccc.charCodeAt(0)) << 12)
-                    | ((0x3f & cccc.charCodeAt(1)) << 6)
-                    |  (0x3f & cccc.charCodeAt(2))
-            );
-        default:
-            return  fromCharCode(
-                ((0x1f & cccc.charCodeAt(0)) << 6)
-                    |  (0x3f & cccc.charCodeAt(1))
-            );
-        }
-    };
-    var btou = function(b) {
-        return b.replace(re_btou, cb_btou);
-    };
-    var cb_decode = function(cccc) {
-        var len = cccc.length,
-        padlen = len % 4,
-        n = (len > 0 ? b64tab[cccc.charAt(0)] << 18 : 0)
-            | (len > 1 ? b64tab[cccc.charAt(1)] << 12 : 0)
-            | (len > 2 ? b64tab[cccc.charAt(2)] <<  6 : 0)
-            | (len > 3 ? b64tab[cccc.charAt(3)]       : 0),
-        chars = [
-            fromCharCode( n >>> 16),
-            fromCharCode((n >>>  8) & 0xff),
-            fromCharCode( n         & 0xff)
-        ];
-        chars.length -= [0, 0, 2, 1][padlen];
-        return chars.join('');
-    };
-    var _atob = global.atob ? function(a) {
-        return global.atob(a);
-    } : function(a){
-        return a.replace(/\S{1,4}/g, cb_decode);
-    };
-    var atob = function(a) {
-        return _atob(String(a).replace(/[^A-Za-z0-9\+\/]/g, ''));
-    };
-    var _decode = buffer ?
-        buffer.from && Uint8Array && buffer.from !== Uint8Array.from
-        ? function(a) {
-            return (a.constructor === buffer.constructor
-                    ? a : buffer.from(a, 'base64')).toString();
-        }
-        : function(a) {
-            return (a.constructor === buffer.constructor
-                    ? a : new buffer(a, 'base64')).toString();
-        }
-        : function(a) { return btou(_atob(a)) };
-    var decode = function(a){
-        return _decode(
-            String(a).replace(/[-_]/g, function(m0) { return m0 == '-' ? '+' : '/' })
-                .replace(/[^A-Za-z0-9\+\/]/g, '')
-        );
-    };
-    var noConflict = function() {
-        var Base64 = global.Base64;
-        global.Base64 = _Base64;
-        return Base64;
-    };
-    // export Base64
-    global.Base64 = {
-        VERSION: version,
-        atob: atob,
-        btoa: btoa,
-        fromBase64: decode,
-        toBase64: encode,
-        utob: utob,
-        encode: encode,
-        encodeURI: encodeURI,
-        btou: btou,
-        decode: decode,
-        noConflict: noConflict,
-        __buffer__: buffer
-    };
-    // if ES5 is available, make Base64.extendString() available
-    if (typeof Object.defineProperty === 'function') {
-        var noEnum = function(v){
-            return {value:v,enumerable:false,writable:true,configurable:true};
-        };
-        global.Base64.extendString = function () {
-            Object.defineProperty(
-                String.prototype, 'fromBase64', noEnum(function () {
-                    return decode(this)
-                }));
-            Object.defineProperty(
-                String.prototype, 'toBase64', noEnum(function (urisafe) {
-                    return encode(this, urisafe)
-                }));
-            Object.defineProperty(
-                String.prototype, 'toBase64URI', noEnum(function () {
-                    return encode(this, true)
-                }));
-        };
-    }
-    //
-    // export Base64 to the namespace
-    //
-    if (global['Meteor']) { // Meteor.js
-        Base64 = global.Base64;
-    }
-    // module.exports and AMD are mutually exclusive.
-    // module.exports has precedence.
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports.Base64 = global.Base64;
-    }
-    else if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define([], function(){ return global.Base64 });
-    }
-    // that's it!
-    return {Base64: global.Base64}
-}));
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],172:[function(require,module,exports){
 "use strict";
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
@@ -35350,7 +35112,7 @@ function _decrypt() {
   }));
   return _decrypt.apply(this, arguments);
 }
-},{"./nodeapi.js":174,"./params.js":175,"./webapi.js":176,"@babel/runtime/helpers/asyncToGenerator":160,"@babel/runtime/helpers/interopRequireDefault":161,"@babel/runtime/helpers/interopRequireWildcard":162,"@babel/runtime/regenerator":163,"js-crypto-env":177}],173:[function(require,module,exports){
+},{"./nodeapi.js":173,"./params.js":174,"./webapi.js":175,"@babel/runtime/helpers/asyncToGenerator":160,"@babel/runtime/helpers/interopRequireDefault":161,"@babel/runtime/helpers/interopRequireWildcard":162,"@babel/runtime/regenerator":163,"js-crypto-env":176}],172:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -35380,7 +35142,7 @@ var _default = {
   decrypt: _aes.decrypt
 };
 exports.default = _default;
-},{"./aes.js":172}],174:[function(require,module,exports){
+},{"./aes.js":171}],173:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -35509,7 +35271,7 @@ function decrypt(data, key, _ref2, nodeCrypto) {
   msg.set(final, decryptedBody.length);
   return msg;
 }
-},{"./params.js":175,"@babel/runtime/helpers/interopRequireDefault":161}],175:[function(require,module,exports){
+},{"./params.js":174,"@babel/runtime/helpers/interopRequireDefault":161}],174:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -35540,7 +35302,7 @@ var _default = {
   }
 };
 exports.default = _default;
-},{}],176:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -35829,7 +35591,7 @@ var msDecrypt = function msDecrypt(alg, key, data, webCrypto) {
     };
   });
 };
-},{"@babel/runtime/helpers/asyncToGenerator":160,"@babel/runtime/helpers/interopRequireDefault":161,"@babel/runtime/regenerator":163}],177:[function(require,module,exports){
+},{"@babel/runtime/helpers/asyncToGenerator":160,"@babel/runtime/helpers/interopRequireDefault":161,"@babel/runtime/regenerator":163}],176:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -35906,7 +35668,7 @@ function getMsCrypto() {
   if (window.crypto) return undefined;
   if (window.msCrypto) return window.msCrypto.subtle;
 }
-},{"crypto":60}],178:[function(require,module,exports){
+},{"crypto":60}],177:[function(require,module,exports){
 (function (Buffer){
 /*!
  * RSA library for Node.js
@@ -36308,7 +36070,7 @@ module.exports = (function () {
 })();
 
 }).call(this,require("buffer").Buffer)
-},{"./formats/formats.js":184,"./libs/rsa.js":188,"./schemes/schemes.js":192,"./utils":193,"asn1":169,"buffer":51,"constants":53,"crypto":60}],179:[function(require,module,exports){
+},{"./formats/formats.js":183,"./libs/rsa.js":187,"./schemes/schemes.js":191,"./utils":192,"asn1":169,"buffer":51,"constants":53,"crypto":60}],178:[function(require,module,exports){
 var crypt = require('crypto');
 
 module.exports = {
@@ -36326,7 +36088,7 @@ module.exports = {
         return engine(keyPair, options);
     }
 };
-},{"./io.js":180,"./js.js":181,"./node12.js":182,"crypto":60}],180:[function(require,module,exports){
+},{"./io.js":179,"./js.js":180,"./node12.js":181,"crypto":60}],179:[function(require,module,exports){
 var crypto = require('crypto');
 var constants = require('constants');
 var schemes = require('../schemes/schemes.js');
@@ -36399,7 +36161,7 @@ module.exports = function (keyPair, options) {
         }
     };
 };
-},{"../schemes/schemes.js":192,"constants":53,"crypto":60}],181:[function(require,module,exports){
+},{"../schemes/schemes.js":191,"constants":53,"crypto":60}],180:[function(require,module,exports){
 var BigInteger = require('../libs/jsbn.js');
 var schemes = require('../schemes/schemes.js');
 
@@ -36434,7 +36196,7 @@ module.exports = function (keyPair, options) {
         }
     };
 };
-},{"../libs/jsbn.js":187,"../schemes/schemes.js":192}],182:[function(require,module,exports){
+},{"../libs/jsbn.js":186,"../schemes/schemes.js":191}],181:[function(require,module,exports){
 var crypto = require('crypto');
 var constants = require('constants');
 var schemes = require('../schemes/schemes.js');
@@ -36491,7 +36253,7 @@ module.exports = function (keyPair, options) {
         }
     };
 };
-},{"../schemes/schemes.js":192,"./js.js":181,"constants":53,"crypto":60}],183:[function(require,module,exports){
+},{"../schemes/schemes.js":191,"./js.js":180,"constants":53,"crypto":60}],182:[function(require,module,exports){
 var _ = require('../utils')._;
 var utils = require('../utils');
 
@@ -36564,7 +36326,7 @@ module.exports = {
     }
 };
 
-},{"../utils":193}],184:[function(require,module,exports){
+},{"../utils":192}],183:[function(require,module,exports){
 var _ = require('../utils')._;
 
 function formatParse(format) {
@@ -36661,7 +36423,7 @@ module.exports = {
         }
     }
 };
-},{"../utils":193,"./components":183,"./pkcs1":185,"./pkcs8":186}],185:[function(require,module,exports){
+},{"../utils":192,"./components":182,"./pkcs1":184,"./pkcs8":185}],184:[function(require,module,exports){
 (function (Buffer){
 var ber = require('asn1').Ber;
 var _ = require('../utils')._;
@@ -36812,7 +36574,7 @@ module.exports = {
     }
 };
 }).call(this,require("buffer").Buffer)
-},{"../utils":193,"asn1":169,"buffer":51}],186:[function(require,module,exports){
+},{"../utils":192,"asn1":169,"buffer":51}],185:[function(require,module,exports){
 (function (Buffer){
 var ber = require('asn1').Ber;
 var _ = require('../utils')._;
@@ -37003,7 +36765,7 @@ module.exports = {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../utils":193,"asn1":169,"buffer":51}],187:[function(require,module,exports){
+},{"../utils":192,"asn1":169,"buffer":51}],186:[function(require,module,exports){
 (function (Buffer){
 /*
  * Basic JavaScript BN library - subset useful for RSA encryption.
@@ -38546,7 +38308,7 @@ BigInteger.prototype.square = bnSquare;
 
 module.exports = BigInteger;
 }).call(this,require("buffer").Buffer)
-},{"../utils":193,"buffer":51,"crypto":60}],188:[function(require,module,exports){
+},{"../utils":192,"buffer":51,"crypto":60}],187:[function(require,module,exports){
 (function (Buffer){
 /*
  * RSA Encryption / Decryption with PKCS1 v2 Padding.
@@ -38866,7 +38628,7 @@ module.exports.Key = (function () {
 
 
 }).call(this,require("buffer").Buffer)
-},{"../encryptEngines/encryptEngines.js":179,"../schemes/schemes.js":192,"../utils":193,"../utils.js":193,"./jsbn.js":187,"buffer":51,"crypto":60}],189:[function(require,module,exports){
+},{"../encryptEngines/encryptEngines.js":178,"../schemes/schemes.js":191,"../utils":192,"../utils.js":192,"./jsbn.js":186,"buffer":51,"crypto":60}],188:[function(require,module,exports){
 (function (Buffer){
 /**
  * PKCS_OAEP signature scheme
@@ -39049,7 +38811,7 @@ module.exports.makeScheme = function (key, options) {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../libs/jsbn":187,"buffer":51,"crypto":60}],190:[function(require,module,exports){
+},{"../libs/jsbn":186,"buffer":51,"crypto":60}],189:[function(require,module,exports){
 (function (Buffer){
 /**
  * PKCS1 padding and signature scheme
@@ -39291,7 +39053,7 @@ module.exports.makeScheme = function (key, options) {
 
 
 }).call(this,require("buffer").Buffer)
-},{"../libs/jsbn":187,"buffer":51,"constants":53,"crypto":60}],191:[function(require,module,exports){
+},{"../libs/jsbn":186,"buffer":51,"constants":53,"crypto":60}],190:[function(require,module,exports){
 (function (Buffer){
 /**
  * PSS signature scheme
@@ -39478,7 +39240,7 @@ module.exports.makeScheme = function (key, options) {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../libs/jsbn":187,"./schemes":192,"buffer":51,"crypto":60}],192:[function(require,module,exports){
+},{"../libs/jsbn":186,"./schemes":191,"buffer":51,"crypto":60}],191:[function(require,module,exports){
 module.exports = {
     pkcs1: require('./pkcs1'),
     pkcs1_oaep: require('./oaep'),
@@ -39502,7 +39264,7 @@ module.exports = {
         return module.exports[scheme] && module.exports[scheme].isSignature;
     }
 };
-},{"./oaep":189,"./pkcs1":190,"./pss":191}],193:[function(require,module,exports){
+},{"./oaep":188,"./pkcs1":189,"./pss":190}],192:[function(require,module,exports){
 (function (process){
 /*
  * Utils functions
@@ -39610,7 +39372,7 @@ module.exports.trimSurroundingText = function (data, opening, closing) {
     return data.substring(openingBoundaryIndex + opening.length, closingBoundaryIndex);
 }
 }).call(this,require('_process'))
-},{"_process":122,"crypto":60}],194:[function(require,module,exports){
+},{"_process":122,"crypto":60}],193:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -39649,7 +39411,7 @@ if (hadRuntime) {
   }
 }
 
-},{"./runtime":195}],195:[function(require,module,exports){
+},{"./runtime":194}],194:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -40372,7 +40134,7 @@ if (hadRuntime) {
   })() || Function("return this")()
 );
 
-},{}],196:[function(require,module,exports){
+},{}],195:[function(require,module,exports){
 (function (process){
 /* eslint-disable node/no-deprecated-api */
 
@@ -40453,11 +40215,11 @@ if (!safer.constants) {
 module.exports = safer
 
 }).call(this,require('_process'))
-},{"_process":122,"buffer":51}],197:[function(require,module,exports){
+},{"_process":122,"buffer":51}],196:[function(require,module,exports){
 const BASE_URL = "http://localhost:3000";
 
 //const BASE_URL = "http://conseg.lad.pucrs.br:3000";
-
+//encodeURIComponent("aHR0cHM6Ly93d3cudzNzY2hvb2xzLmNvbS9qc3JlZi9qc3JlZl9lbmNvZGV1cmkuY/XNw")
 const NodeRSA = require('node-rsa');
 const aes = require('js-crypto-aes');
 const jQuery = require('jquery');
@@ -40487,7 +40249,6 @@ function enviarNoticia(urlNews, voto) {
       var key = new NodeRSA();
       key.importKey(privKey, 'private')
       key.setOptions({ encryptionScheme: 'pkcs1' });
-      var Base64 = require('js-base64').Base64;
       //Decript Aes
       aesKey = key.decrypt(aesKey);
       var aesDecripted = aesKey.slice(92, aesKey.length);
@@ -40532,20 +40293,7 @@ function enviarNoticia(urlNews, voto) {
             "userPublicKey": publicKey
           },
           success: function (result) {
-            // Create a simple text notification:
-            var notification = webkitNotifications.createNotification(
-              'relative',  // icon url - can be relative
-              'Hello!',  // notification title
-              'Lorem ipsum...'  // notification body text
-            );
-
-            // Or create an HTML notification:
-            var notification = webkitNotifications.createHTMLNotification(
-              'notification.html'  // html url - can be relative
-            );
-
-            // Then show the notification.
-            notification.show();
+            console.log(result)
           },
           error: function (jqXHR, status, err) {
             console.log(jqXHR);
@@ -40724,24 +40472,34 @@ function viewScreenMyNewsVoltaIndex() {
 function mostraNoticiaTableNewsGeral(noticia) {
   $("#listScreen").hide();
   $("body").width(600);
-  $("#idViewScreenGeral").val(noticia.news_id);
-  $("#textAreaViewScreenGeral").html(noticia.texto);
-  $("#urlScreenGeral").html("<a target='_blank' href='" + noticia.url + "'>" + noticia.url + "</a>");
+  $("#tituloViewScreenGeral").val("A FAZER");
+  $("#votosViewScreenGeral").val(noticia.voters.length);
+  $("#urlScreenGeral").html("<a target='_blank' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
   if (noticia.validation == undefined)
     $("#resultViewScreenGeral").val("EM VOTO");
   else if (noticia.validation)
     $("#resultViewScreenGeral").val("VERDADEIRA");
   else
     $("#resultViewScreenGeral").val("FAKE");
-  if (noticia.validation == undefined) {
+
+  if (noticia.reliabilityIndex === 1)
+    $("#resultViewScreenGeral").val("FATO");
+  else if (noticia.reliabilityIndex === 2)
+    $("#resultViewScreenGeral").val("NEUTRA");
+  else if (noticia.reliabilityIndex === 0)
+    $("#resultViewScreenGeral").val("FAKE");
+  else if (noticia.reliabilityIndex === 3)
+    $("#resultViewScreenGeral").val("PODE SER FAKE");
+  else if (noticia.reliabilityIndex === 4)
+    $("#resultViewScreenGeral").val("PODE SER FATO");
+
     chrome.storage.sync.get(['logado'], function (result) {
       if (result.logado) {
         $("#botoesDeVoto").show();
-      }
+      } else
+        $("#botoesDeVoto").hide();
     });
-  }
-  else
-    $("#botoesDeVoto").hide();
+  
   $("#viewScreenNewsGeral").show();
 }
 
@@ -40786,99 +40544,6 @@ function desativaFuncoesDeLogado() {
   chrome.contextMenus.removeAll();
   chrome.contextMenus.create({ "title": "No Fake News", "id": "noFakeNews" });
 }
-
-
-//
-//
-//        FUNCOES DE DADOS
-//
-//
-
-//USUARIOS
-
-usuario = new Object();
-usuario.login = "Bruno";
-usuario.key = "adoiasjdikasdpaskpdaspodkpodpiejwoqieq12312";
-usuario.memberId = "1";
-
-usuario.senha = "12345";
-usuario.avaliacao = 5;
-
-//NOTICIAS
-var n1 = new Object(), n2 = new Object(), n3 = new Object(), n4 = new Object(), n5 = new Object(),
-  n6 = new Object(), n7 = new Object(), n8 = new Object(), n9 = new Object(), n10 = new Object(), n11 = new Object(),
-  n12 = new Object(), n13 = new Object();
-
-n1.news_id = "sdassdasdasdadsadfs";
-n1.texto = "Brasil é campeão em corrupção";
-n1.url = "http://www.google.com/corrupcao";
-n1.validation = null;
-
-n2.news_id = "kkslqsdqwdqwdddkla";
-n2.texto = "Brasil é hexa";
-n2.url = "http://www.google.com/hexa";
-n2.validation = false;
-
-n3.news_id = "dsafqwdqwdqwdqwrthtrdasf";
-n3.texto = "Internacional na serie A";
-n3.url = "http://www.google.com/internacional";
-n3.validation = true;
-
-n4.news_id = "sdfsqqwqfqrweiqhrthrowei";
-n4.texto = "Papa é pop";
-n4.url = "http://www.google.com/papa";
-n4.validation = true;
-
-n5.news_id = "kkalsowfwertgeghtrjpqwe";
-n5.texto = "Banda calipso ganha premio de melhor banda do mundo";
-n5.url = "http://www.google.com/calipso";
-n5.validation = null;
-
-n6.news_id = "123e1ddrthtrhtrtrhtrhsd";
-n6.texto = "Gremio é time pequeno";
-n6.url = "http://www.google.com/gremio";
-n6.validation = true;
-
-n7.news_id = "sddsqeeqeqtrhefgwfwdsad";
-n7.texto = "Menino ney so cai";
-n7.url = "http://www.google.com/meninoney";
-n7.validation = false;
-
-n8.news_id = "efgegkoerergergergergeojfiowf";
-n8.texto = "Lolapalusa é festival de drogado";
-n8.url = "http://www.google.com/lolapalusa";
-n8.validation = true;
-
-n9.news_id = "w8f0w8dfhtrhrtherhh90";
-n9.texto = "PM abre edital para concurso 2018";
-n9.url = "http://www.google.com/pm";
-n9.validation = null;
-
-n10.news_id = "L00h3453463yã";
-n10.texto = "Lady gaga virá ao brasil amanhã";
-n10.url = "http://www.google.com/gaga";
-n10.validation = false;
-
-n11.news_id = "932ri34gerfhfwhergreriefj";
-n11.texto = "Hyperledger não da suporte aos desenvolvedores de graça";
-n11.url = "http://www.google.com/hyperledger";
-n11.validation = true;
-
-n12.news_id = "sdkiofw3twtwgefhekfiodwfm";
-n12.texto = "Dell vira empresa de caminhoes de lixo";
-n12.url = "http://www.google.com/dell";
-n12.validation = null;
-
-n13.news_id = "isd8f9dergregegergero0";
-n13.texto = "Outono sera estação das chuvas em 2018";
-n13.url = "http://www.google.com/tempo";
-n13.validation = true;
-
-noticias = [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13];
-
-
-
-
 
 
 //
@@ -40963,16 +40628,16 @@ function carregaNoticiasGeral() {
     url: BASE_URL + "/trendingNews",
     type: 'GET',
     success: function (result) {
-      console.log(Object.values(result))
+      noticias = result;
+      // Add na tabela
+      for (let index = 0; index < 5 && index < noticias.length; index++) {
+        adicionaNoticiaGeral(index);
+      }
     },
     error: function (jqXHR, status, err) {
       alert("Verifique sua conexão.");
     }
   });
-  //Add na tabela
-  // for (let index = 0; index < 5; index++) {
-  //   adicionaNoticiaGeral(index);
-  // }
 }
 
 function adicionaNoticiaGeral(index) {
@@ -40980,15 +40645,17 @@ function adicionaNoticiaGeral(index) {
 
   var newRow = $("<tr>");
   var cols = "";
-  cols += '<th>' + noticia.news_id.substring(0, 10) + '...</th>';
-  cols += '<th>' + noticia.texto.substring(0, 20) + '...</th>';
-  cols += '<th>' + noticia.url.substring(11, 21) + '...</th>';
-  if (noticia.validation)
-    cols += '<td style="color: chartreuse">VERDADEIRA</td>';
-  else if (noticia.validation == null)
-    cols += '<td style="color: rgb(0, 0, 0)">EM VOTO</td>';
-  else
+  cols += '<th>' + atob(noticia.url).substring(0, 130) + '...</th>';
+  if (noticia.reliabilityIndex === 1)
+    cols += '<td style="color: chartreuse">FATO</td>';
+  else if (noticia.reliabilityIndex === 2)
+    cols += '<td style="color: rgb(0, 0, 0)">NEUTRA</td>';
+  else if (noticia.reliabilityIndex === 0)
     cols += '<td style="color: red">FAKE</td>';
+  else if (noticia.reliabilityIndex === 3)
+    cols += '<td style="color: blue">PODE SER FAKE</td>';
+  else if (noticia.reliabilityIndex === 4)
+    cols += '<td style="color: blue">PODE SER FATO</td>';
   newRow.append(cols);
   $("#tableNewsGeral").append(newRow);
 
@@ -40996,7 +40663,7 @@ function adicionaNoticiaGeral(index) {
     var id = $(this).find("th").html();
     var noticia = undefined;
     noticias.forEach(element => {
-      if (element.news_id.substring(0, 10) + "..." == id) {
+      if (atob(element.url).substring(0, 130) + "..." == id) {
         noticia = element;
       }
     });
@@ -41248,4 +40915,4 @@ document.getElementById('go-to-options').addEventListener('click', function () {
     window.open(chrome.runtime.getURL('graficos.html'));
   }
 });
-},{"jquery":170,"js-base64":171,"js-crypto-aes":173,"node-rsa":178}]},{},[197]);
+},{"jquery":170,"js-crypto-aes":172,"node-rsa":177}]},{},[196]);
