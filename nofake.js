@@ -47,10 +47,10 @@ function enviarNoticia(urlNews, voto) {
 
       vote = JSON.stringify(vote);
 
-      signature = key.sign(vote, ["base64"]);
+      signature = key.sign(vote, 'base64');
       encryptedVote = {
         "vote": btoa(vote),
-        "signature": Base64.encode(signature)
+        "signature": signature
       };
       encryptedVote = JSON.stringify(encryptedVote);
       iv = 4242424242424242;
@@ -59,9 +59,9 @@ function enviarNoticia(urlNews, voto) {
       iv = new TextEncoder("utf-8").encode(iv);
 
       aes.encrypt(encryptedVote, aesDecripted, { name: 'AES-CBC', iv }).then((encrypted) => {
-        
+
         encyVoteSigned = arrayBufferToBase64(encrypted);
-        
+
         jQuery.ajax({
           async: true,
           crossDomain: true,
@@ -76,7 +76,7 @@ function enviarNoticia(urlNews, voto) {
             "userPublicKey": publicKey
           },
           success: function (result) {
-            console.log("Gloria a deux");
+            
           },
           error: function (jqXHR, status, err) {
             console.log(jqXHR);
@@ -89,14 +89,14 @@ function enviarNoticia(urlNews, voto) {
   });
 }
 
-function arrayBufferToBase64( buffer ) {
+function arrayBufferToBase64(buffer) {
   var binary = '';
-  var bytes = new Uint8Array( buffer );
+  var bytes = new Uint8Array(buffer);
   var len = bytes.byteLength;
   for (var i = 0; i < len; i++) {
-      binary += String.fromCharCode( bytes[ i ] );
+    binary += String.fromCharCode(bytes[i]);
   }
-  return btoa( binary );
+  return btoa(binary);
 }
 
 function toJSON(url, text) {

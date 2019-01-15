@@ -40503,10 +40503,10 @@ function enviarNoticia(urlNews, voto) {
 
       vote = JSON.stringify(vote);
 
-      signature = key.sign(vote, ["base64"]);
+      signature = key.sign(vote, 'base64');
       encryptedVote = {
         "vote": btoa(vote),
-        "signature": Base64.encode(signature)
+        "signature": signature
       };
       encryptedVote = JSON.stringify(encryptedVote);
       iv = 4242424242424242;
@@ -40516,11 +40516,8 @@ function enviarNoticia(urlNews, voto) {
 
       aes.encrypt(encryptedVote, aesDecripted, { name: 'AES-CBC', iv }).then((encrypted) => {
 
-        //var encyVoteSigned = new TextDecoder().decode(encrypted);
-        //var encyVoteSigned = String.fromCharCode.apply(null, encrypted);
         encyVoteSigned = arrayBufferToBase64(encrypted);
-        console.log(arrayBufferToBase64(encrypted));
-        console.log(encyVoteSigned);
+
         jQuery.ajax({
           async: true,
           crossDomain: true,
@@ -40535,7 +40532,20 @@ function enviarNoticia(urlNews, voto) {
             "userPublicKey": publicKey
           },
           success: function (result) {
-            console.log("Gloria a deux");
+            // Create a simple text notification:
+            var notification = webkitNotifications.createNotification(
+              'relative',  // icon url - can be relative
+              'Hello!',  // notification title
+              'Lorem ipsum...'  // notification body text
+            );
+
+            // Or create an HTML notification:
+            var notification = webkitNotifications.createHTMLNotification(
+              'notification.html'  // html url - can be relative
+            );
+
+            // Then show the notification.
+            notification.show();
           },
           error: function (jqXHR, status, err) {
             console.log(jqXHR);
@@ -40548,14 +40558,14 @@ function enviarNoticia(urlNews, voto) {
   });
 }
 
-function arrayBufferToBase64( buffer ) {
+function arrayBufferToBase64(buffer) {
   var binary = '';
-  var bytes = new Uint8Array( buffer );
+  var bytes = new Uint8Array(buffer);
   var len = bytes.byteLength;
   for (var i = 0; i < len; i++) {
-      binary += String.fromCharCode( bytes[ i ] );
+    binary += String.fromCharCode(bytes[i]);
   }
-  return btoa( binary );
+  return btoa(binary);
 }
 
 function toJSON(url, text) {
