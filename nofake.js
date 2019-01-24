@@ -137,21 +137,6 @@ function mostraLoginOuDesconecta() {
   });
 }
 
-//Mostra a tela de resultado de busca
-function mostraTelaResultBusca() {
-  $("#searchScreen").hide();
-  $("#viewResultadoBusca").show();
-}
-
-//Mostra a tela de resultado de busca
-function voltaTelaResultBusca() {
-  $("#viewResultadoBusca").hide();
-  $("#divBuscaNaoAchou").hide();
-  $("#divTableResultadoBusca").hide();
-  $("#tableResultadoBusca tbody tr").remove();
-  $("#searchScreen").show();
-}
-
 //Mostra a tela inicial e esconde a tela de login
 function mostraIndex() {
   $("#loginScreen").hide();
@@ -220,7 +205,7 @@ function mostraNoticiaTableMyNews(noticia) {
     $("#resultViewScreenMyNews").val("FAKE");
 }
 
-//Recebe uma noticia completa ao clicar na tabela de noticias de busca e mostra 
+//Mostra a noticia ao ser buscada
 function mostraNoticiaTableResultadoBusca(noticia) {
   $("#viewResultadoBusca").hide();
   $("body").width(600);
@@ -241,7 +226,7 @@ function mostraNoticiaTableResultadoBusca(noticia) {
 function viewScreenTableResultadoBusca() {
   $("#viewScreenNewsBusca").hide();
   $("body").width(300);
-  $("#viewResultadoBusca").show();
+  $("#searchScreen").show();
 }
 
 //mostra index e esconde visualizacao de noticia do usuario
@@ -273,12 +258,6 @@ function mostraNoticiaTableNewsGeral(noticia) {
   getTitleTableNewsGeral(atob(noticia.url));
   $("#votosViewScreenGeral").val(noticia.voters.length);
   $("#urlScreenGeral").html("<a target='_blank' id='urlNewsViewGeralLink' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
-  if (noticia.validation == undefined)
-    $("#resultViewScreenGeral").val("EM VOTO");
-  else if (noticia.validation)
-    $("#resultViewScreenGeral").val("VERDADEIRA");
-  else
-    $("#resultViewScreenGeral").val("FAKE");
 
   if (noticia.reliabilityIndex === 1)
     $("#resultViewScreenGeral").val("FATO");
@@ -299,6 +278,48 @@ function mostraNoticiaTableNewsGeral(noticia) {
     });
   
   $("#viewScreenNewsGeral").show();
+}
+
+function getTitleTableNewsBusca(url){
+  jQuery.support.cors = true;
+  jQuery.ajax({
+    url: url,
+    crossDomain: true,
+    success: function(data) {
+      var matches = data.match(/<title>(.*?)<\/title>/);
+      $("#tituloViewScreenBusca").val(matches[0].replace('&#39;', "'").replace('<title>', '').replace('</title>', '').replace('&#39;', "'").replace('&#39;', "'").replace('&#39;', "'"));
+    }, error: function (xhr, ajaxOptions, thrownError) {
+      $("#tituloViewScreenBusca").val("Não disponível no momento :(");
+    }
+  });
+
+}
+
+function mostraNoticiaBusca(noticia){
+  $("body").width(600);
+  getTitleTableNewsBusca(atob(noticia.url));
+  $("#votosViewScreenBusca").val(noticia.voters.length);
+  $("#urlScreenBusca").html("<a target='_blank' id='urlNewsViewBuscaLink' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
+
+  if (noticia.reliabilityIndex === 1)
+    $("#resultViewScreenBusca").val("FATO");
+  else if (noticia.reliabilityIndex === 2)
+    $("#resultViewScreenBusca").val("NEUTRA");
+  else if (noticia.reliabilityIndex === 0)
+    $("#resultViewScreenBusca").val("FAKE");
+  else if (noticia.reliabilityIndex === 3)
+    $("#resultViewScreenBusca").val("PODE SER FAKE");
+  else if (noticia.reliabilityIndex === 4)
+    $("#resultViewScreenBusca").val("PODE SER FATO");
+
+    chrome.storage.sync.get(['logado'], function (result) {
+      if (result.logado) {
+        $("#botoesDeVoto").show();
+      } else
+        $("#botoesDeVoto").hide();
+    });
+  
+  $("#viewScreenNewsBusca").show();
 }
 
 //mostra index e esconde visualizacao de noticia geral
@@ -583,7 +604,8 @@ function procurarNews() {
       url: BASE_URL + "/newsURL/"+encodeURIComponent(btoa(url)),
       type: 'GET',
       success: function (result) {
-        console.log(result)
+        $("#searchScreen").hide();
+        mostraNoticiaBusca(result);
       },
       error: function (jqXHR, status, err) {
         console.log(jqXHR);
@@ -591,71 +613,6 @@ function procurarNews() {
         console.log(err);
       }
     });
-    //resultado = [];
-    noticiasDaBusca = noticias;
-    //----------------------
-    mostraTelaResultBusca();
-    if (noticiasDaBusca.length == 0) {
-      $("#divBuscaNaoAchou").show();
-    } else {
-      $("#divTableResultadoBusca").show();
-      carregaNoticiasResultadoBusca();
-    }
-  }
-}
-
-function carregaNoticiasResultadoBusca() {
-  paginaResultadoBusca = 1;
-  for (let index = 0; index < 5; index++) {
-    adicionaNoticiaResultadoBusca(index);
-  }
-}
-
-function adicionaNoticiaResultadoBusca(index) {
-  var noticia = noticiasDaBusca[index];
-
-  var newRow = $("<tr>");
-  var cols = "";
-  cols += '<th>' + noticia.news_id.substring(0, 10) + '...</th>';
-  if (noticia.validation)
-    cols += '<td style="color: chartreuse">VERDADEIRA</td>';
-  else if (noticia.validation == null)
-    cols += '<td style="color: rgb(0, 0, 0)">EM VOTO</td>';
-  else
-    cols += '<td style="color: red">FAKE</td>';
-  newRow.append(cols);
-  $("#tableResultadoBusca").append(newRow);
-
-  $("#tableResultadoBusca tbody tr").click(function () {
-    var id = $(this).find("th").html();
-    var noticia = undefined;
-    noticiasDaBusca.forEach(element => {
-      if (element.news_id.substring(0, 10) + "..." == id) {
-        noticia = element;
-      }
-    });
-    mostraNoticiaTableResultadoBusca(noticia);
-  });
-}
-
-function resultadoBuscaNextPage() {
-  if ((paginaResultadoBusca * 5) + 1 < noticias.length) {
-    paginaResultadoBusca++;
-    $("#tableResultadoBusca tbody tr").remove();
-    for (let index = ((paginaResultadoBusca - 1) * 5); index < paginaResultadoBusca * 5; index++) {
-      if (noticias.length > index)
-        adicionaNoticiaResultadoBusca(index);
-    }
-  }
-}
-
-function resultadoBuscaPreviousPage() {
-  if (paginaResultadoBusca != 1) {
-    paginaResultadoBusca--;
-    $("#tableResultadoBusca tbody tr").remove();
-    for (let index = ((paginaResultadoBusca - 1) * 5); index < paginaResultadoBusca * 5; index++) {
-      adicionaNoticiaResultadoBusca(index);
-    }
   }
 }
 
@@ -677,9 +634,6 @@ document.getElementById('listButtonPrev').addEventListener('click', geralPreviou
 document.getElementById('votarFake').addEventListener('click', votarFake);
 document.getElementById('votarNaoFake').addEventListener('click', votarNaoFake);
 document.getElementById('botaoBusca').addEventListener('click', procurarNews);
-document.getElementById('voltaBuscaProcurar').addEventListener('click', voltaTelaResultBusca);
-document.getElementById('listResultadoBuscaButtonNext').addEventListener('click', resultadoBuscaNextPage);
-document.getElementById('listResultadoBuscaButtonPrev').addEventListener('click', resultadoBuscaPreviousPage);
 document.getElementById('viewScreenMNewsBuscaVoltaTabBusca').addEventListener('click', viewScreenTableResultadoBusca);
 document.getElementById('gerarprivKey').addEventListener('click', gerarprivKey);
 document.getElementById('imgChave').addEventListener('click', copiarChave);
