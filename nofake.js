@@ -167,6 +167,7 @@ function mostraBuscarNoticias() {
 //esconde a tela de busca e mostra a tela inicial
 function buscaVoltaIndex() {
   $("#searchScreen").slideUp();
+  $("#alertSearch").hide();
   $("#indexScreen").slideDown();
 }
 
@@ -595,7 +596,7 @@ function votarNaoFake() {
 
 function procurarNews() {
   var url= $.trim($("#inputBuscaUrl").val());
-
+  $("#alertSearch").hide();
   if (url != "") {
     //FAZ A BUSCA NA API
     jQuery.ajax({
@@ -604,8 +605,12 @@ function procurarNews() {
       url: BASE_URL + "/newsURL/"+encodeURIComponent(btoa(url)),
       type: 'GET',
       success: function (result) {
-        $("#searchScreen").hide();
-        mostraNoticiaBusca(result);
+        if(result.voters.length == 0){
+          $("#alertSearch").show();
+        } else {
+          $("#searchScreen").hide();
+          mostraNoticiaBusca(result);
+        }
       },
       error: function (jqXHR, status, err) {
         console.log(jqXHR);
