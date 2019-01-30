@@ -76,19 +76,19 @@
       <label>Insira ou gere uma chave.</label>
       <label><b>ANTENÇÃO</b>: esta chave é a única forma de acessar sua conta, portanto guarde
         ela em um local seguro.<label>
-      <hr>
-      <div class="form-group">
-        <label for="loginprivKey">Login (Chave):</label>
-        <textarea style="resize: none" rows="4" cols="27" id="loginprivKey" autocomplete="off"></textarea>
-        <p></p>
-        <div class="alert alert-danger" id="alertLogin" style="display: none" role="alert"></div>
-        <p></p>
-        <button type="button" id="botaoDefineprivKey" class="btn btn-success btn-block">Usar chave</button>
-        <p></p>
-        <button type="button" id="gerarprivKey" class="btn btn-success btn-block">Gerar chave</button>
-        <p></p>
-        <button type="button" id="mostraIndex" class="btn btn-warning btn-block">Voltar</button>
-      </div>
+          <hr>
+          <div class="form-group">
+            <label for="loginprivKey">Login (Chave):</label>
+            <textarea style="resize: none" rows="4" cols="27" id="loginprivKey" autocomplete="off"></textarea>
+            <p></p>
+            <div class="alert alert-danger" id="alertLogin" style="display: none" role="alert"></div>
+            <p></p>
+            <button type="button" id="botaoDefineprivKey" class="btn btn-success btn-block">Usar chave</button>
+            <p></p>
+            <button type="button" id="gerarprivKey" class="btn btn-success btn-block">Gerar chave</button>
+            <p></p>
+            <button type="button" id="mostraIndex" class="btn btn-warning btn-block">Voltar</button>
+          </div>
     </div>
   </div>
 
@@ -112,7 +112,7 @@
     </div>
   </div>
 
-  <!-- Tela de ver lista de noticias -->
+  <!-- Tela de lista de noticias -->
 
   <div id="listScreen" class="container" style="display: none;">
     <p class="text-center lead">Clique na notícia para visualizar</p>
@@ -144,42 +144,30 @@
     <p></p>
   </div>
 
-  <!-- Tela de visualizacao de noticia do usuario -->
-
-  <div id="viewScreenMyNews" class="container" style="display: none;">
-    <div>
-      <label for="Id">Id:</label>
-      <input type="text" autocomplete="off" readonly class="form-control" id="idViewScreenMyNews">
-      <p></p>
-      <label for="Text">Texto:</label><br>
-      <textarea cols="69" id="textAreaViewScreenMyNews" readonly rows="5" style="resize: none"></textarea>
-      <p></p>
-      <label for="Url">Url:</label><br>
-      <label style="overflow:auto" id="urlScreenMyNews"></label>
-      <p></p>
-      <label for="Result">Resultado:</label>
-      <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenMyNews">
-      <p></p>
-      <button type="button" id="viewScreenMyNewsVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
-      <p></p>
-    </div>
-  </div>
-
   <!-- Tela de visualizacao de noticias gerais / votar -->
 
-  <div id="viewScreenNewsGeral" class="container" style="display: none;">
+  <div id="viewScreen" class="container" style="display: none;">
     <div>
       <label for="titulo">Título:</label>
-      <input type="text" autocomplete="off" readonly class="form-control" id="tituloViewScreenGeral">
+      <input type="text" autocomplete="off" readonly class="form-control" id="tituloView">
       <p></p>
       <label for="Text">Votos:</label><br>
-      <input type="text" autocomplete="off" readonly class="form-control" id="votosViewScreenGeral">
-      <p></p>
+      <div>
+        <div class="col-xs-4">
+          <label for="Text">Total:</label><input type="text" autocomplete="off" readonly class="form-control" id="votosView">
+        </div>
+        <div class="col-xs-4">
+          <label for="Text">Fake:</label><input type="text" autocomplete="off" readonly class="form-control" id="votosViewFake">
+        </div>
+        <div class="col-xs-4">
+          <label for="Text">Fato:</label><input type="text" autocomplete="off" readonly class="form-control" id="votosViewFato">
+        </div>
+      </div>
       <label for="Url">Url:</label><br>
-      <label style="overflow:auto" id="urlScreenGeral"></label>
+      <label style="overflow:auto" id="urlView"></label>
       <p></p>
       <label for="Result">Resultado:</label>
-      <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenGeral">
+      <input type="text" autocomplete="off" readonly class="form-control" id="resultView">
       <p></p>
       <div class="row" id="botoesDeVoto" style="display: none;">
         <div class="col-xs-6">
@@ -192,7 +180,7 @@
       <p></p>
       <div id="alertaDoVoto" class="text-center"></div>
       <p></p>
-      <button type="button" id="viewScreenNewsGeralVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
+      <button type="button" id="viewScreenVolta" class="btn btn-warning btn-block">Voltar</button>
       <p></p>
     </div>
   </div>
@@ -200,7 +188,9 @@
   <!-- Tela de informacoes sobre avaliacao -->
 
   <div id="avaliacaoInfoScreen" class="container" style="display: none;">
+
     <div>
+      <!--
       <h3 class="text-center">Avaliação
         <small class="text-muted">
           <br>A avaliação é o nível de confiança de um usuário.</small>
@@ -265,33 +255,13 @@
           </tr>
         </tbody>
       </table>
+      -->
       <br>
       <button type="button" id="avaliacaoInfoVoltaIndex" class="btn btn-warning btn-block">Voltar</button>
       <p></p>
     </div>
+
   </div>
-
-  <!-- Tela de visualizacao de noticia de busca -->
-
-  <div id="viewScreenNewsBusca" class="container" style="display: none;">
-    <div>
-      <label for="titulo">Título:</label>
-      <input type="text" autocomplete="off" readonly class="form-control" id="tituloViewScreenBusca">
-      <p></p>
-      <label for="Text">Votos:</label><br>
-      <input type="text" autocomplete="off" readonly class="form-control" id="votosViewScreenBusca">
-      <p></p>
-      <label for="Url">Url:</label><br>
-      <label style="overflow:auto" id="urlScreenBusca"></label>
-      <p></p>
-      <label for="Result">Resultado:</label>
-      <input type="text" autocomplete="off" readonly class="form-control" id="resultViewScreenBusca">
-      <p></p>
-      <button type="button" id="viewScreenMNewsBuscaVoltaTabBusca" class="btn btn-warning btn-block">Voltar</button>
-      <p></p>
-    </div>
-  </div>
-
   <!-- <script type="text/javascript" src="nofake.js"></script> -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
   <script src="bundle.js"></script>

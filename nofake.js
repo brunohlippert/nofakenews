@@ -5,6 +5,7 @@ const BASE_URL = "http://localhost:3000";
 const NodeRSA = require('node-rsa');
 const aes = require('js-crypto-aes');
 const jQuery = require('jquery');
+paginaVoltarMostraNews = 0;
 //
 //
 //    CHROME SCRIPTS
@@ -76,7 +77,8 @@ function enviarNoticia(urlNews, voto) {
             "userPublicKey": publicKey
           },
           success: function (result) {
-            console.log(result)
+            console.log(result);
+            atualizaNews(urlNews);
           },
           error: function (jqXHR, status, err) {
             console.log(jqXHR);
@@ -111,10 +113,8 @@ chrome.contextMenus.onClicked.addListener(onClickHandler);
 // Set up context menu tree at install time.
 chrome.runtime.onInstalled.addListener(function () {
   // Create one test item for each context type.
-
-  chrome.contextMenus.create({ "title": "Notícia Falsa, enviar para analise", "id": "noFakeNewsFake" });
-  chrome.contextMenus.create({ "title": "Notícia Verdadeira, enviar para analise", "id": "noFakeNewsVerdade" });
-
+  chrome.contextMenus.create({ "title": "No Fake News", "id": "noFakeNews" });
+  
 });
 
 //
@@ -206,26 +206,11 @@ function mostraNoticiaTableMyNews(noticia) {
     $("#resultViewScreenMyNews").val("FAKE");
 }
 
-//Mostra a noticia ao ser buscada
-function mostraNoticiaTableResultadoBusca(noticia) {
-  $("#viewResultadoBusca").hide();
-  $("body").width(600);
-  $("#idViewScreenNewsBusca").val(noticia.news_id);
-  $("#textAreaViewScreenNewsBusca").html(noticia.texto);
-  $("#urlScreenNewsBusca").html("<a target='_blank' href='" + noticia.url + "'>" + noticia.url + "</a>");
-  $("#viewScreenNewsBusca").show();
-
-  if (noticia.validation == undefined)
-    $("#resultViewScreenNewsBusca").val("EM VOTO");
-  else if (noticia.validation)
-    $("#resultViewScreenNewsBusca").val("VERDADEIRA");
-  else
-    $("#resultViewScreenNewsBusca").val("FAKE");
-}
-
 //mostra index e esconde visualizacao de noticia do usuario
 function viewScreenTableResultadoBusca() {
-  $("#viewScreenNewsBusca").hide();
+  $("#viewScreen").hide();
+  $("#votarNaoFake").text("VERDADEIRA");
+  $("#votarFake").text("FAKE");
   $("body").width(300);
   $("#searchScreen").show();
 }
@@ -237,96 +222,110 @@ function viewScreenMyNewsVoltaIndex() {
   $("#indexScreen").show();
 }
 
-function getTitleTableNewsGeral(url){
+//Busca o titulo de uma noticia no site
+function getTitle(url){
   jQuery.support.cors = true;
   jQuery.ajax({
     url: url,
     crossDomain: true,
     success: function(data) {
       var matches = data.match(/<title>(.*?)<\/title>/);
-      $("#tituloViewScreenGeral").val(matches[0].replace('&#39;', "'").replace('<title>', '').replace('</title>', '').replace('&#39;', "'").replace('&#39;', "'").replace('&#39;', "'"));
+      $("#tituloView").val(matches[0].replace('&#39;', "'").replace('<title>', '').replace('</title>', '').replace('&#39;', "'").replace('&#39;', "'").replace('&#39;', "'"));
     }, error: function (xhr, ajaxOptions, thrownError) {
-      $("#tituloViewScreenGeral").val("Não disponível no momento :(");
+      $("#tituloView").val("Não disponível no momento :(");
     }
   });
 
 }
 
 //Recebe uma noticia completa ao clicar na tabela de noticias gerais e mostra
-function mostraNoticiaTableNewsGeral(noticia) {
+function mostraNoticia(noticia, paginaAnterior) {
   $("#listScreen").hide();
+  $("#searchScreen").hide();
   $("body").width(600);
-  getTitleTableNewsGeral(atob(noticia.url));
-  $("#votosViewScreenGeral").val(noticia.voters.length);
-  $("#urlScreenGeral").html("<a target='_blank' id='urlNewsViewGeralLink' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
+  getTitle(atob(noticia.url));
+  $("#votosView").val(noticia.voters.length);
+  $("#urlView").html("<a target='_blank' id='viewUrlLink' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
 
   if (noticia.reliabilityIndex === 1)
-    $("#resultViewScreenGeral").val("FATO");
+    $("#resultView").val("FATO");
   else if (noticia.reliabilityIndex === 2)
-    $("#resultViewScreenGeral").val("NEUTRA");
+    $("#resultView").val("NEUTRA");
   else if (noticia.reliabilityIndex === 0)
-    $("#resultViewScreenGeral").val("FAKE");
+    $("#resultView").val("FAKE");
   else if (noticia.reliabilityIndex === 3)
-    $("#resultViewScreenGeral").val("PODE SER FAKE");
+    $("#resultView").val("PODE SER FAKE");
   else if (noticia.reliabilityIndex === 4)
-    $("#resultViewScreenGeral").val("PODE SER FATO");
+    $("#resultView").val("PODE SER FATO");
 
-    chrome.storage.sync.get(['logado'], function (result) {
-      if (result.logado) {
-        $("#botoesDeVoto").show();
-      } else
-        $("#botoesDeVoto").hide();
-    });
-  
-  $("#viewScreenNewsGeral").show();
-}
-
-function getTitleTableNewsBusca(url){
-  jQuery.support.cors = true;
-  jQuery.ajax({
-    url: url,
-    crossDomain: true,
-    success: function(data) {
-      var matches = data.match(/<title>(.*?)<\/title>/);
-      $("#tituloViewScreenBusca").val(matches[0].replace('&#39;', "'").replace('<title>', '').replace('</title>', '').replace('&#39;', "'").replace('&#39;', "'").replace('&#39;', "'"));
-    }, error: function (xhr, ajaxOptions, thrownError) {
-      $("#tituloViewScreenBusca").val("Não disponível no momento :(");
-    }
+  chrome.storage.sync.get(['logado'], function (result) {
+    if (result.logado) {
+      $("#botoesDeVoto").show();
+    } else
+      $("#botoesDeVoto").hide();
   });
 
-}
+  var votosFake = 0;
+  var votosFato = 0;
+  var votou = undefined;
+  chrome.storage.sync.get(['privKey'], function (result) {
+    var publicKey;
 
-function mostraNoticiaBusca(noticia){
-  $("body").width(600);
-  getTitleTableNewsBusca(atob(noticia.url));
-  $("#votosViewScreenBusca").val(noticia.voters.length);
-  $("#urlScreenBusca").html("<a target='_blank' id='urlNewsViewBuscaLink' href='" + atob(noticia.url) + "'>" + atob(noticia.url) + "</a>");
-
-  if (noticia.reliabilityIndex === 1)
-    $("#resultViewScreenBusca").val("FATO");
-  else if (noticia.reliabilityIndex === 2)
-    $("#resultViewScreenBusca").val("NEUTRA");
-  else if (noticia.reliabilityIndex === 0)
-    $("#resultViewScreenBusca").val("FAKE");
-  else if (noticia.reliabilityIndex === 3)
-    $("#resultViewScreenBusca").val("PODE SER FAKE");
-  else if (noticia.reliabilityIndex === 4)
-    $("#resultViewScreenBusca").val("PODE SER FATO");
-
-    chrome.storage.sync.get(['logado'], function (result) {
-      if (result.logado) {
-        $("#botoesDeVoto").show();
-      } else
-        $("#botoesDeVoto").hide();
+    if (result.privKey != undefined){
+      var privKey = atob(result.privKey);
+      var key = new NodeRSA();
+      key.importKey(privKey, 'private')
+      key.setOptions({ encryptionScheme: 'pkcs1' });
+      publicKey = key.exportKey(["public"]);
+    }
+    noticia.voters.forEach(voto => {
+      if (voto.vote == true) {
+        votosFato++; 
+      } else {
+        votosFake++;
+      }
+      if(voto.user.userPublicKey === publicKey){
+        votou = voto.vote;
+      }
     });
-  
-  $("#viewScreenNewsBusca").show();
+
+    if(votou == true){
+      $("#votarNaoFake").text("VERDADEIRA (X)");
+      $("#votarFake").text("FAKE");
+    } else if (votou == false){
+      $("#votarFake").text("FAKE (X)");
+      $("#votarNaoFake").text("VERDADEIRA");
+    }
+
+    $("#votosViewFake").val(votosFake);
+    $("#votosViewFato").val(votosFato);
+
+  });
+
+  if(paginaAnterior == 1){
+    document.getElementById('viewScreenVolta').addEventListener('click', viewScreenVoltaIndex);
+    document.getElementById('viewScreenVolta').removeEventListener('click', viewScreenTableResultadoBusca);
+  } else if (paginaAnterior == 2){
+    document.getElementById('viewScreenVolta').removeEventListener('click', viewScreenVoltaIndex);
+    document.getElementById('viewScreenVolta').addEventListener('click', viewScreenTableResultadoBusca);
+  }
+
+  $("#viewScreen").show();
 }
 
-//mostra index e esconde visualizacao de noticia geral
-function viewScreenNewsGeralVoltaIndex() {
-  $("#viewScreenNewsGeral").hide();
-  $("#alertaDoVoto").html("");
+function atualizaNews(url){
+  noticia = buscaNews(url);
+  mostraNoticia(noticia, paginaVoltarMostraNews);
+}
+
+//mostra index e esconde visualizacao de noticia 
+function viewScreenVoltaIndex() {
+  $("#viewScreen").hide();
+  $("#votarNaoFake").text("VERDADEIRA");
+  $("#votarFake").text("FAKE");
+  paginaNewsGeral = 1;
+  $("#tableNewsGeral tbody tr").remove();
+  carregaNoticiasGeral()
   $("#listScreen").show();
 }
 
@@ -352,6 +351,10 @@ function ativaFuncoesDeLogado() {
   $("#mostraLogin").html("Sair");
   //$("#rating").html(usuario.avaliacao);
   $("#loginPrivateKey").val("");
+
+  chrome.contextMenus.create({ "title": "Notícia Falsa, enviar para analise", "id": "noFakeNewsFake" });
+  chrome.contextMenus.create({ "title": "Notícia Verdadeira, enviar para analise", "id": "noFakeNewsVerdade" });
+
   carregaNoticiasUsuario();
 }
 
@@ -362,7 +365,6 @@ function desativaFuncoesDeLogado() {
   $("#tableMyNews tbody tr").remove();
 
   chrome.contextMenus.removeAll();
-  chrome.contextMenus.create({ "title": "No Fake News", "id": "noFakeNews" });
 }
 
 
@@ -462,7 +464,6 @@ function carregaNoticiasGeral() {
 
 function adicionaNoticiaGeral(index) {
   var noticia = noticias[index];
-
   var newRow = $("<tr>");
   var cols = "";
   cols += '<th>' + atob(noticia.url).substring(0, 130) + '...</th>';
@@ -487,7 +488,8 @@ function adicionaNoticiaGeral(index) {
         noticia = element;
       }
     });
-    mostraNoticiaTableNewsGeral(noticia);
+    paginaVoltarMostraNews = 1;
+    mostraNoticia(noticia, paginaVoltarMostraNews);
   });
 }
 
@@ -587,11 +589,11 @@ $(document).ready(function () {
 });
 
 function votarFake() {
-  enviarNoticia($("#urlNewsViewGeralLink").html(), false);
+  enviarNoticia($("#viewUrlLink").html(), false);
 }
 
 function votarNaoFake() {
-  enviarNoticia($("#urlNewsViewGeralLink").html(), true);
+  enviarNoticia($("#viewUrlLink").html(), true);
 }
 
 function procurarNews() {
@@ -609,8 +611,29 @@ function procurarNews() {
           $("#alertSearch").show();
         } else {
           $("#searchScreen").hide();
-          mostraNoticiaBusca(result);
+          paginaVoltarMostraNews = 2;
+          mostraNoticia(result, paginaVoltarMostraNews);
         }
+      },
+      error: function (jqXHR, status, err) {
+        console.log(jqXHR);
+        console.log(status);
+        console.log(err);
+      }
+    });
+  }
+}
+
+function buscaNews(url) {
+  if (url != "") {
+    //FAZ A BUSCA NA API
+    jQuery.ajax({
+      async: true,
+      crossDomain: true,
+      url: BASE_URL + "/newsURL/"+encodeURIComponent(btoa(url)),
+      type: 'GET',
+      success: function (result) {
+        mostraNoticia(result, paginaVoltarMostraNews);
       },
       error: function (jqXHR, status, err) {
         console.log(jqXHR);
@@ -627,8 +650,6 @@ document.getElementById('buscarNoticia').addEventListener('click', mostraBuscarN
 document.getElementById('buscaVoltaIndex').addEventListener('click', buscaVoltaIndex);
 document.getElementById('verNoticias').addEventListener('click', verNoticias);
 document.getElementById('listVoltaIndex').addEventListener('click', listVoltaIndex);
-document.getElementById('viewScreenMyNewsVoltaIndex').addEventListener('click', viewScreenMyNewsVoltaIndex);
-document.getElementById('viewScreenNewsGeralVoltaIndex').addEventListener('click', viewScreenNewsGeralVoltaIndex);
 document.getElementById('imgAvaliacaoInfo').addEventListener('click', mostraAvaliacaoInfoScreen);
 document.getElementById('avaliacaoInfoVoltaIndex').addEventListener('click', voltaAvaliacaoInfoScreen);
 document.getElementById('botaoDefineprivKey').addEventListener('click', logar);
@@ -639,7 +660,6 @@ document.getElementById('listButtonPrev').addEventListener('click', geralPreviou
 document.getElementById('votarFake').addEventListener('click', votarFake);
 document.getElementById('votarNaoFake').addEventListener('click', votarNaoFake);
 document.getElementById('botaoBusca').addEventListener('click', procurarNews);
-document.getElementById('viewScreenMNewsBuscaVoltaTabBusca').addEventListener('click', viewScreenTableResultadoBusca);
 document.getElementById('gerarprivKey').addEventListener('click', gerarprivKey);
 document.getElementById('imgChave').addEventListener('click', copiarChave);
 
