@@ -11,3 +11,6 @@ Este projeto foi desenvolvido na área de forense digital com apoio do CNPq e PU
 Este projeto não possui fins lucrativos.
 
 Autor: brunohlippert@gmail.com
+
+
+run ./refresh.sh to make updates
